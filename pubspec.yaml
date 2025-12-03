@@ -1,5 +1,5 @@
 name: app
-description: "A new Flutter project."
+description: "Nava - A minimalist productivity app inspired by Jony Ive."
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -10,17 +10,24 @@ dependencies:
   flutter:
     sdk: flutter
   
+  # State management
   provider: ^6.1.2
+  
+  # Storage
   shared_preferences: ^2.2.2
+  
+  # UI & Assets
   google_fonts: ^6.2.1
   cupertino_icons: ^1.0.8
   flutter_animate: ^4.5.0
   percent_indicator: ^4.2.3
   modal_bottom_sheet: ^3.0.0
+  
+  # Utilities
   shamsi_date: ^1.0.0
   
-  # پکیج‌های حساس
-  timezone: ^0.9.2
+  # Critical Updates
+  timezone: ^0.10.1
   flutter_local_notifications: ^18.0.1
   vibration: ^3.1.4
 
@@ -28,11 +35,24 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^4.0.0
+  # برای ساخت آیکون اپلیکیشن از روی logo.png
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
+  
+  # *** بخش اضافه شده برای خواندن عکس‌ها ***
+  assets:
+    - assets/
 
-# *** بخش حیاتی برای حل مشکل شما ***
-# این بخش پروژه را مجبور می‌کند دقیقاً از همین نسخه استفاده کند
+# *** تنظیمات ساخت آیکون اپلیکیشن ***
+# هر وقت خواستید آیکون عوض شود، دستور ساخت را در ترمینال بزنید
+flutter_launcher_icons:
+  android: "ic_launcher"
+  ios: true
+  image_path: "assets/logo.png" # مطمئن شوید فایل logo.png در پوشه assets باشد
+  min_sdk_android: 21
+
+# *** حل مشکل تداخل نسخه‌ها ***
 dependency_overrides:
   flutter_local_notifications: 18.0.1

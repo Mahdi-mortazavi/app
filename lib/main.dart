@@ -327,7 +327,7 @@ class IveApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Focus',
+      title: 'Nava',
       theme: ThemeData(
         useMaterial3: true,
         scaffoldBackgroundColor: AppDesign.background,
