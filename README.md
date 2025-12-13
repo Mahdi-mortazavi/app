@@ -135,7 +135,7 @@
   <table style="border:none;">
     <tr style="border:none;">
       <td align="center" width="200" style="border:none;">
-        <a href="https://t.me/Mahdi_mortazavi1">
+        <a href="https://github.com/Mahdi-mortazavi">
           <img src="https://github.com/Mahdi-mortazavi.png" width="100" style="border-radius: 50%; border: 4px solid #007AFF; padding: 3px;"><br>
           <h3 style="margin-bottom:0;">Mahdi Mortazavi</h3>
         </a>
