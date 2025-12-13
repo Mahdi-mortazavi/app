@@ -612,7 +612,8 @@ class _ProgressChartState extends State<ProgressChart> {
     final Jalali j = Jalali.now();
     switch (_view) {
       case ChartView.daily:
-        return j.subtract(Duration(days: 6 - i)).formatter.d.toString();
+       // در پکیج shamsi_date برای کم کردن روز، باید روز منفی add کنید
+return j.add(days: -(6 - i)).formatter.d.toString();
       case ChartView.weekly:
         return ["۴ هفته قبل", "۳ هفته قبل", "۲ هفته قبل", "این هفته"][i];
       case ChartView.monthly:
