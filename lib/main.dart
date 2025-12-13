@@ -711,13 +711,29 @@ class PinnedCard extends StatelessWidget {
                     context,
                     listen: false,
                   ).toggleComplete(task.id),
-                  child: Container(
-                    width: 22,
-                    height: 22,
+                  child: AnimatedContainer(
+                    duration: 200.ms,
+                    width: 26,
+                    height: 26,
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey.shade300, width: 2),
+                      color: task.isCompleted
+                          ? AppDesign.green
+                          : Colors.transparent,
+                      border: Border.all(
+                        color: task.isCompleted
+                            ? AppDesign.green
+                            : Colors.grey.shade300,
+                        width: 2,
+                      ),
                     ),
+                    child: task.isCompleted
+                        ? const Icon(
+                            CupertinoIcons.check_mark,
+                            size: 14,
+                            color: Colors.white,
+                          )
+                        : null,
                   ),
                 ),
                 Icon(
