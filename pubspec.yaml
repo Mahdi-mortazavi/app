@@ -22,6 +22,8 @@ dependencies:
   flutter_animate: ^4.5.0
   percent_indicator: ^4.2.3
   modal_bottom_sheet: ^3.0.0
+  fl_chart: ^0.68.0
+  collection: ^1.18.0
   
   # Utilities
   shamsi_date: ^1.0.0
