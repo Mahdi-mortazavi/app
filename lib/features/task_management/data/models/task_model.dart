@@ -48,7 +48,7 @@ class TaskModel extends Task {
       'title': title,
       'category': category,
       'duration': duration,
-      'reminder': reminder?.toIso86-01String(),
+      'reminder': reminder?.toIso8601String(),
       'isPinned': isPinned,
       'isCompleted': isCompleted,
       'subtasks': subtasks.map((s) => (s as SubTaskModel).toJson()).toList(),
