@@ -1186,15 +1186,21 @@ class _FocusPageState extends State<FocusPage> {
     super.initState();
     total = widget.task.duration * 60;
     remaining = total;
-    _tick();
+    _startTimer();
   }
 
-  void _tick() {
+  void _startTimer() {
     timer = Timer.periodic(const Duration(seconds: 1), (t) {
-      if (active && remaining > 0) setState(() => remaining--);
-      if (remaining == 0) {
+      if (active && remaining > 0) {
+        setState(() => remaining--);
+      } else {
         t.cancel();
-        if (!kIsWeb) Vibration.vibrate();
+        if (remaining <= 0) {
+          if (mounted) {
+            setState(() => active = false);
+          }
+          if (!kIsWeb) Vibration.vibrate();
+        }
       }
     });
   }
@@ -1308,46 +1314,79 @@ class _FocusPageState extends State<FocusPage> {
                   ],
                 ),
                 const SizedBox(height: 60),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    _GlassBtn(
-                      "-5",
-                      () => setState(() => remaining = max(0, remaining - 300)),
-                    ),
-                    const SizedBox(width: 32),
-                    GestureDetector(
-                      onTap: () {
-                        if (!kIsWeb) HapticFeedback.mediumImpact();
-                        setState(() => active = !active);
-                      },
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(40),
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
-                          child: Container(
-                            width: 80,
-                            height: 80,
-                            decoration: BoxDecoration(
-                              color: Colors.white.withOpacity(0.2),
-                              shape: BoxShape.circle,
-                              border: Border.all(color: Colors.white30),
-                            ),
-                            child: Icon(
-                              active
-                                  ? CupertinoIcons.pause_fill
-                                  : CupertinoIcons.play_fill,
-                              color: Colors.white,
-                              size: 32,
+                if (remaining > 0)
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _GlassBtn(
+                        "-5",
+                        () =>
+                            setState(() => remaining = max(0, remaining - 300)),
+                      ),
+                      const SizedBox(width: 32),
+                      GestureDetector(
+                        onTap: () {
+                          if (!kIsWeb) HapticFeedback.mediumImpact();
+                          setState(() => active = !active);
+                          if (active) {
+                            _startTimer();
+                          } else {
+                            timer?.cancel();
+                          }
+                        },
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(40),
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                            child: Container(
+                              width: 80,
+                              height: 80,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.2),
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white30),
+                              ),
+                              child: Icon(
+                                active
+                                    ? CupertinoIcons.pause_fill
+                                    : CupertinoIcons.play_fill,
+                                color: Colors.white,
+                                size: 32,
+                              ),
                             ),
                           ),
                         ),
                       ),
+                      const SizedBox(width: 32),
+                      _GlassBtn("+5", () => setState(() => remaining += 300)),
+                    ],
+                  )
+                else
+                  CupertinoButton(
+                    onPressed: () {
+                      Provider.of<TaskProvider>(context, listen: false)
+                          .toggleComplete(widget.task.id);
+                      Navigator.pop(context);
+                    },
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 48,
+                        vertical: 16,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(30),
+                      ),
+                      child: const Text(
+                        "اتمام",
+                        style: TextStyle(
+                          color: Colors.black,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 18,
+                        ),
+                      ),
                     ),
-                    const SizedBox(width: 32),
-                    _GlassBtn("+5", () => setState(() => remaining += 300)),
-                  ],
-                ),
+                  ),
                 const Spacer(flex: 2),
               ],
             ),
