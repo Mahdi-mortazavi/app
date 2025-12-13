@@ -16,6 +16,8 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:fl_chart/fl_chart.dart';
+import 'package:collection/collection.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:vibration/vibration.dart';
 
@@ -93,6 +95,7 @@ class Task {
   bool isPinned;
   bool isCompleted;
   List<SubTask> subtasks;
+  DateTime? completionDate;
 
   Task({
     required this.id,
@@ -103,6 +106,7 @@ class Task {
     this.isPinned = false,
     this.isCompleted = false,
     List<SubTask>? subtasks,
+    this.completionDate,
   }) : subtasks = subtasks ?? [];
 
   Map<String, dynamic> toJson() => {
@@ -114,6 +118,7 @@ class Task {
         'isPinned': isPinned,
         'isCompleted': isCompleted,
         'subtasks': subtasks.map((s) => s.toJson()).toList(),
+        'completionDate': completionDate?.toIso8601String(),
       };
 
   factory Task.fromJson(Map<String, dynamic> json) => Task(
@@ -127,6 +132,9 @@ class Task {
         isCompleted: json['isCompleted'],
         subtasks:
             (json['subtasks'] as List).map((s) => SubTask.fromJson(s)).toList(),
+        completionDate: json['completionDate'] != null
+            ? DateTime.parse(json['completionDate'])
+            : null,
       );
 }
 
@@ -217,8 +225,10 @@ class TaskProvider extends ChangeNotifier {
     final t = _tasks.firstWhere((x) => x.id == id);
     t.isCompleted = !t.isCompleted;
     if (t.isCompleted) {
+      t.completionDate = DateTime.now();
       if (!kIsWeb) _notifications.cancel(id);
     } else {
+      t.completionDate = null;
       _schedule(t);
     }
     _save();
@@ -357,6 +367,13 @@ class HomeScreen extends StatelessWidget {
                 pinned: true,
               ),
               SliverToBoxAdapter(child: const SizedBox(height: 10)),
+              const SliverToBoxAdapter(
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 24),
+                  child: ProgressChart(),
+                ),
+              ),
+              const SliverToBoxAdapter(child: SizedBox(height: 24)),
               // Pinned
               Consumer<TaskProvider>(
                 builder: (ctx, prov, _) {
@@ -451,6 +468,159 @@ class HomeScreen extends StatelessWidget {
         ).animate().scale(duration: 400.ms, curve: Curves.easeOutBack),
       ),
     );
+  }
+}
+
+enum ChartView { daily, weekly, monthly }
+
+class ProgressChart extends StatefulWidget {
+  const ProgressChart({super.key});
+
+  @override
+  State<ProgressChart> createState() => _ProgressChartState();
+}
+
+class _ProgressChartState extends State<ProgressChart> {
+  ChartView _view = ChartView.weekly;
+
+  @override
+  Widget build(BuildContext context) {
+    final tasks = Provider.of<TaskProvider>(context).tasks;
+    final data = _getChartData(tasks);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          "نمودار پیشرفت",
+          style: AppDesign.titleLarge.copyWith(fontSize: 22),
+        ),
+        const SizedBox(height: 20),
+        SizedBox(
+          height: 200,
+          child: BarChart(
+            BarChartData(
+              barTouchData: BarTouchData(
+                touchTooltipData: BarTouchTooltipData(
+                  getTooltipItem: (group, groupIndex, rod, rodIndex) =>
+                      BarTooltipItem(
+                    rod.toY.round().toString(),
+                    const TextStyle(color: Colors.white, fontSize: 12),
+                  ),
+                ),
+              ),
+              titlesData: FlTitlesData(
+                show: true,
+                rightTitles: const AxisTitles(),
+                topTitles: const AxisTitles(),
+                bottomTitles: AxisTitles(
+                  sideTitles: SideTitles(
+                    showTitles: true,
+                    getTitlesWidget: (value, meta) => SideTitleWidget(
+                      axisSide: meta.axisSide,
+                      child: Text(
+                        _getBottomTitle(value.toInt()),
+                        style: const TextStyle(fontSize: 11),
+                      ),
+                    ),
+                    reservedSize: 30,
+                  ),
+                ),
+                leftTitles: const AxisTitles(),
+              ),
+              borderData: FlBorderData(show: false),
+              barGroups: data
+                  .mapIndexed(
+                    (i, d) => BarChartGroupData(
+                      x: i,
+                      barRods: [
+                        BarChartRodData(
+                          toY: d.toDouble(),
+                          color: AppDesign.blue,
+                          width: 16,
+                          borderRadius: const BorderRadius.vertical(
+                            top: Radius.circular(4),
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                  .toList(),
+              gridData: const FlGridData(show: false),
+            ),
+            swapAnimationDuration: 500.ms,
+            swapAnimationCurve: Curves.easeInOut,
+          ),
+        ),
+        const SizedBox(height: 20),
+        CupertinoSlidingSegmentedControl<ChartView>(
+          groupValue: _view,
+          onValueChanged: (v) {
+            if (v != null) setState(() => _view = v);
+          },
+          children: const {
+            ChartView.daily: Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Text("روزانه"),
+            ),
+            ChartView.weekly: Text("هفتگی"),
+            ChartView.monthly: Text("ماهانه"),
+          },
+        ),
+      ],
+    );
+  }
+
+  List<int> _getChartData(List<Task> allTasks) {
+    final now = DateTime.now();
+    final completed =
+        allTasks.where((t) => t.isCompleted && t.completionDate != null);
+
+    switch (_view) {
+      case ChartView.daily:
+        return List.generate(7, (i) {
+          final day = now.subtract(Duration(days: 6 - i));
+          return completed
+              .where((t) =>
+                  t.completionDate!.year == day.year &&
+                  t.completionDate!.month == day.month &&
+                  t.completionDate!.day == day.day)
+              .length;
+        });
+      case ChartView.weekly:
+        return List.generate(4, (i) {
+          final weekStart = now.subtract(Duration(days: (now.weekday + 1) % 7 + (3 - i) * 7));
+          return completed.where((t) {
+            final cd = t.completionDate!;
+            return cd.isAfter(weekStart) &&
+                cd.isBefore(weekStart.add(const Duration(days: 7)));
+          }).length;
+        });
+      case ChartView.monthly:
+        return List.generate(6, (i) {
+          final date = DateTime(now.year, now.month - (5 - i), 1);
+          return completed
+              .where((t) =>
+                  t.completionDate!.year == date.year &&
+                  t.completionDate!.month == date.month)
+              .length;
+        });
+    }
+  }
+
+  String _getBottomTitle(int i) {
+    final Jalali j = Jalali.now();
+    switch (_view) {
+      case ChartView.daily:
+        return j.subtract(Duration(days: 6 - i)).formatter.d.toString();
+      case ChartView.weekly:
+        return ["۴ هفته قبل", "۳ هفته قبل", "۲ هفته قبل", "این هفته"][i];
+      case ChartView.monthly:
+        final now = DateTime.now();
+        final targetDate = DateTime(now.year, now.month - (5 - i), 1);
+        final jalaliDate = Jalali.fromDateTime(targetDate);
+        return jalaliDate.formatter.mN;
+    }
   }
 }
 
