@@ -6,7 +6,6 @@ import 'package:app/features/task_management/presentation/bloc/tasks_bloc.dart';
 import 'package:app/features/task_management/presentation/pages/home_page.dart';
 import 'package:app/features/notifications/domain/services/notification_service.dart';
 import 'package:app/features/task_management/presentation/bloc/tasks_event.dart';
-import 'package:app/core/theme/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
