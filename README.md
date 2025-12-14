@@ -122,6 +122,46 @@
 *   **Smart Animations:** The UI breathes and bounces, making productivity feel organic.
 *   **Performance:** Optimized for 60fps+ rendering on Android & iOS.
 
+### 🏗️ Architecture
+
+This project follows a clean, scalable, and feature-first architecture using the BLoC pattern for state management. The goal is to make the project highly maintainable, easy to update, and quick to add new features.
+
+#### Directory Structure
+
+The project is organized into a feature-first directory structure, where each feature is a self-contained module.
+
+```
+lib/
+├── core/             # Common utilities, themes, constants, etc.
+├── data/             # Data sources and repositories.
+├── features/         # Feature modules.
+│   └── task_management/
+│       ├── presentation/
+│       │   ├── bloc/
+│       │   ├── pages/
+│       │   └── widgets/
+│       ├── domain/
+│       │   ├── entities/
+│       │   └── usecases/
+│       └── data/
+│           ├── models/
+│           ├── repositories/
+│           └── datasources/
+└── main.dart
+```
+
+#### Adding a New Feature
+
+To add a new feature, follow these steps:
+
+1.  **Create a new feature directory:** Under `lib/features`, create a new directory for your feature (e.g., `lib/features/new_feature`).
+2.  **Create the directory structure:** Inside the new feature directory, create the `presentation`, `domain`, and `data` directories, along with their subdirectories, as shown above.
+3.  **Define the domain layer:** Create the entities and use cases for your feature in the `domain` directory.
+4.  **Implement the data layer:** Create the data models, data sources, and repository implementation in the `data` directory.
+5.  **Implement the presentation layer:** Create the BLoC, pages, and widgets for your feature in the `presentation` directory.
+6.  **Register the dependencies:** In `lib/core/service_locator.dart`, register the dependencies for your new feature (BLoC, use cases, repository, etc.).
+7.  **Integrate the feature:** Add the new feature's main page to the app's navigation.
+
 </div>
 
 <br>
