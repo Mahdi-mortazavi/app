@@ -34,6 +34,8 @@ dependencies:
   timezone: ^0.10.1
   flutter_local_notifications: ^18.0.1
   vibration: ^3.1.4
+  permission_handler: ^11.3.1
+  device_info_plus: ^10.1.0
 
 dev_dependencies:
   flutter_test:

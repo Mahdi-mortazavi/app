@@ -7,6 +7,8 @@ import 'package:app/features/task_management/domain/entities/task.dart';
 import 'package:app/features/task_management/presentation/bloc/tasks_bloc.dart';
 import 'package:app/features/task_management/presentation/bloc/tasks_event.dart';
 import 'package:app/core/theme/app_theme.dart';
+import 'package:app/features/notifications/domain/services/notification_service.dart';
+import 'package:app/core/service_locator.dart';
 
 class TaskForm extends StatefulWidget {
   final Task? task;
@@ -282,6 +284,14 @@ class _TaskFormState extends State<TaskForm> {
   }
 
   Future<void> _pickTime() async {
+    final notificationService = sl<NotificationService>();
+    final permissionGranted = await notificationService.requestPermission();
+
+    if (!permissionGranted) {
+      // Optionally, show a dialog to the user that permissions are required
+      return;
+    }
+
     showCupertinoModalPopup(
       context: context,
       builder: (ctx) => Container(
