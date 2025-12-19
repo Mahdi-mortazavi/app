@@ -8,6 +8,7 @@ import 'package:app/features/task_management/presentation/widgets/task_form.dart
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:app/features/task_management/presentation/pages/focus_page.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:app/core/theme/app_theme.dart';
 
 class TaskTile extends StatefulWidget {
@@ -68,7 +69,7 @@ class _TaskTileState extends State<TaskTile> {
                             CupertinoIcons.check_mark,
                             size: 14,
                             color: Colors.white,
-                          )
+                          ).animate().scale(duration: 200.ms).fade()
                         : null,
                   ),
                 ),
