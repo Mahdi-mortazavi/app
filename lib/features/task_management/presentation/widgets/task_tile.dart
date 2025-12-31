@@ -84,6 +84,13 @@ class _TaskTileState extends State<TaskTile> {
                       color:
                           widget.isDone ? AppTheme.textSub : AppTheme.textMain,
                     ),
+                    child: widget.isDone
+                        ? const Icon(
+                            CupertinoIcons.check_mark,
+                            size: 14,
+                            color: Colors.white,
+                          ).animate().fade(duration: 200.ms).scale(duration: 200.ms)
+                        : null,
                   ),
                   if (!widget.isDone)
                     Padding(
