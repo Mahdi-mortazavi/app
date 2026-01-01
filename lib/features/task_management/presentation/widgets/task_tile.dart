@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app/features/task_management/domain/entities/task.dart';
 import 'package:app/features/task_management/presentation/bloc/tasks_bloc.dart';
@@ -45,9 +46,12 @@ class _TaskTileState extends State<TaskTile> {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: () => context
-                      .read<TasksBloc>()
-                      .add(ToggleTaskCompletion(widget.task.id)),
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    context
+                        .read<TasksBloc>()
+                        .add(ToggleTaskCompletion(widget.task.id));
+                  },
                   child: AnimatedContainer(
                     duration: 200.ms,
                     width: 26,
