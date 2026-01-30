@@ -85,17 +85,24 @@ class _TaskFormState extends State<TaskForm> {
                     ),
                   ),
                   if (widget.task != null)
-                    CupertinoButton(
-                      padding: EdgeInsets.zero,
-                      minSize: 0,
-                      child: const Icon(
-                        CupertinoIcons.trash,
-                        color: AppTheme.red,
+                    Semantics(
+                      label: "حذف کار",
+                      button: true,
+                      child: CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        minSize: 0,
+                        child: const Icon(
+                          CupertinoIcons.trash,
+                          color: AppTheme.red,
+                        ),
+                        onPressed: () {
+                          HapticFeedback.mediumImpact();
+                          context
+                              .read<TasksBloc>()
+                              .add(DeleteTask(widget.task!.id));
+                          Navigator.pop(context);
+                        },
                       ),
-                      onPressed: () {
-                        context.read<TasksBloc>().add(DeleteTask(widget.task!.id));
-                        Navigator.pop(context);
-                      },
                     ),
                 ],
               ),
@@ -171,14 +178,21 @@ class _TaskFormState extends State<TaskForm> {
                       color: AppTheme.textSub,
                     ),
                   ),
-                  CupertinoButton(
-                    padding: EdgeInsets.zero,
-                    minSize: 0,
-                    child: const Icon(
-                      CupertinoIcons.add_circled,
-                      color: AppTheme.blue,
+                  Semantics(
+                    label: "افزودن زیرمجموعه",
+                    button: true,
+                    child: CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      minSize: 0,
+                      child: const Icon(
+                        CupertinoIcons.add_circled,
+                        color: AppTheme.blue,
+                      ),
+                      onPressed: () {
+                        HapticFeedback.lightImpact();
+                        _addSub();
+                      },
                     ),
-                    onPressed: _addSub,
                   ),
                 ],
               ),
@@ -196,18 +210,26 @@ class _TaskFormState extends State<TaskForm> {
                       children: [
                         GestureDetector(
                           onTap: () {
+                            HapticFeedback.lightImpact();
                             setState(() {
                               final index = _subs.indexOf(s);
-                              _subs[index] = s.copyWith(isCompleted: !s.isCompleted);
+                              _subs[index]
+                                  = s.copyWith(isCompleted: !s.isCompleted);
                             });
                           },
-                          child: Icon(
-                            s.isCompleted
-                                ? CupertinoIcons.check_mark_circled_solid
-                                : CupertinoIcons.circle,
-                            color:
-                                s.isCompleted ? AppTheme.green : Colors.grey,
-                            size: 20,
+                          child: Semantics(
+                            label: s.isCompleted
+                                ? "علامت‌گذاری زیرمجموعه به عنوان انجام نشده"
+                                : "علامت‌گذاری زیرمجموعه به عنوان انجام شده",
+                            checked: s.isCompleted,
+                            child: Icon(
+                              s.isCompleted
+                                  ? CupertinoIcons.check_mark_circled_solid
+                                  : CupertinoIcons.circle,
+                              color:
+                                  s.isCompleted ? AppTheme.green : Colors.grey,
+                              size: 20,
+                            ),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -222,11 +244,18 @@ class _TaskFormState extends State<TaskForm> {
                           ),
                         ),
                         GestureDetector(
-                          onTap: () => setState(() => _subs.remove(s)),
-                          child: const Icon(
-                            CupertinoIcons.minus_circle,
-                            color: AppTheme.red,
-                            size: 20,
+                          onTap: () {
+                            HapticFeedback.lightImpact();
+                            setState(() => _subs.remove(s));
+                          },
+                          child: Semantics(
+                            label: "حذف زیرمجموعه",
+                            button: true,
+                            child: const Icon(
+                              CupertinoIcons.minus_circle,
+                              color: AppTheme.red,
+                              size: 20,
+                            ),
                           ),
                         ),
                       ],
@@ -234,15 +263,22 @@ class _TaskFormState extends State<TaskForm> {
                   ),
                 ),
               const SizedBox(height: 24),
-              CupertinoButton(
-                color: AppTheme.textMain,
-                borderRadius: BorderRadius.circular(16),
-                onPressed: _save,
-                child: const Text(
-                  "ذخیره",
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+              Semantics(
+                label: "ذخیره تغییرات",
+                button: true,
+                child: CupertinoButton(
+                  color: AppTheme.textMain,
+                  borderRadius: BorderRadius.circular(16),
+                  onPressed: () {
+                    HapticFeedback.mediumImpact();
+                    _save();
+                  },
+                  child: const Text(
+                    "ذخیره",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ),

@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app/features/task_management/domain/entities/task.dart';
 import 'package:app/features/task_management/presentation/bloc/tasks_bloc.dart';
@@ -45,31 +46,43 @@ class _TaskTileState extends State<TaskTile> {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: () => context
-                      .read<TasksBloc>()
-                      .add(ToggleTaskCompletion(widget.task.id)),
-                  child: AnimatedContainer(
-                    duration: 200.ms,
-                    width: 26,
-                    height: 26,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color:
-                          widget.isDone ? AppTheme.green : Colors.transparent,
-                      border: Border.all(
-                        color: widget.isDone
-                            ? AppTheme.green
-                            : Colors.grey.shade300,
-                        width: 2,
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    context
+                        .read<TasksBloc>()
+                        .add(ToggleTaskCompletion(widget.task.id));
+                  },
+                  child: Semantics(
+                    label: widget.isDone
+                        ? "علامت‌گذاری به عنوان انجام نشده"
+                        : "علامت‌گذاری به عنوان انجام شده",
+                    checked: widget.isDone,
+                    child: AnimatedContainer(
+                      duration: 200.ms,
+                      width: 26,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color:
+                            widget.isDone ? AppTheme.green : Colors.transparent,
+                        border: Border.all(
+                          color: widget.isDone
+                              ? AppTheme.green
+                              : Colors.grey.shade300,
+                          width: 2,
+                        ),
                       ),
+                      child: widget.isDone
+                          ? const Icon(
+                              CupertinoIcons.check_mark,
+                              size: 14,
+                              color: Colors.white,
+                            )
+                              .animate()
+                              .fade(duration: 200.ms)
+                              .scale(duration: 200.ms)
+                          : null,
                     ),
-                    child: widget.isDone
-                        ? const Icon(
-                            CupertinoIcons.check_mark,
-                            size: 14,
-                            color: Colors.white,
-                          ).animate().fade(duration: 200.ms).scale(duration: 200.ms)
-                        : null,
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -137,54 +150,82 @@ class _TaskTileState extends State<TaskTile> {
                     ],
                   ),
                 ),
-                if (!widget.isDone)
+                if (!widget.isDone) ...[
+                  if (widget.task.subtasks.isNotEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                      child: Icon(
+                        _expanded
+                            ? CupertinoIcons.chevron_up
+                            : CupertinoIcons.chevron_down,
+                        size: 16,
+                        color: AppTheme.textSub.withOpacity(0.5),
+                      ),
+                    ),
                   GestureDetector(
-                    onTap: () => _openFocus(context, widget.task),
-                    child: const Icon(
-                      CupertinoIcons.play_circle_fill,
-                      size: 30,
-                      color: AppTheme.textMain,
+                    onTap: () {
+                      HapticFeedback.lightImpact();
+                      _openFocus(context, widget.task);
+                    },
+                    child: Semantics(
+                      label: "شروع زمان تمرکز",
+                      button: true,
+                      child: const Icon(
+                        CupertinoIcons.play_circle_fill,
+                        size: 30,
+                        color: AppTheme.textMain,
+                      ),
                     ),
                   ),
+                ],
               ],
             ),
           ),
         ),
-        if (_expanded && widget.task.subtasks.isNotEmpty)
-          Container(
-            margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            decoration: BoxDecoration(
-              color: AppTheme.card,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: widget.task.subtasks
-                  .map(
-                    (s) => ListTile(
-                      dense: true,
-                      leading: Icon(
-                        s.isCompleted
-                            ? CupertinoIcons.check_mark_circled_solid
-                            : CupertinoIcons.circle,
-                        color: s.isCompleted ? AppTheme.green : Colors.grey,
-                        size: 18,
-                      ),
-                      title: Text(
-                        s.title,
-                        style: TextStyle(
-                          decoration:
-                              s.isCompleted ? TextDecoration.lineThrough : null,
-                          fontSize: 13,
-                        ),
-                      ),
-                      onTap: () => context
-                          .read<TasksBloc>()
-                          .add(ToggleSubTaskCompletion(widget.task.id, s.id)),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
+        AnimatedSize(
+          duration: 300.ms,
+          curve: Curves.easeInOut,
+          child: _expanded && widget.task.subtasks.isNotEmpty
+              ? Container(
+                  margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.card,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: widget.task.subtasks
+                        .map(
+                          (s) => ListTile(
+                            dense: true,
+                            leading: Icon(
+                              s.isCompleted
+                                  ? CupertinoIcons.check_mark_circled_solid
+                                  : CupertinoIcons.circle,
+                              color:
+                                  s.isCompleted ? AppTheme.green : Colors.grey,
+                              size: 18,
+                            ),
+                            title: Text(
+                              s.title,
+                              style: TextStyle(
+                                decoration: s.isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                                fontSize: 13,
+                              ),
+                            ),
+                            onTap: () {
+                              HapticFeedback.lightImpact();
+                              context.read<TasksBloc>().add(
+                                  ToggleSubTaskCompletion(widget.task.id, s.id));
+                            },
+                          ),
+                        )
+                        .toList(),
+                  ),
+                )
+              : const SizedBox(width: double.infinity, height: 0),
+        ),
       ],
     );
   }

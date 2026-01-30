@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app/features/task_management/domain/entities/task.dart';
 import 'package:app/features/task_management/presentation/bloc/tasks_bloc.dart';
@@ -33,13 +34,20 @@ class PinnedCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: () => context.read<TasksBloc>().add(ToggleTaskCompletion(task.id)),
-                  child: Container(
-                    width: 22,
-                    height: 22,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      border: Border.all(color: Colors.grey.shade300, width: 2),
+                  onTap: () {
+                    HapticFeedback.mediumImpact();
+                    context.read<TasksBloc>().add(ToggleTaskCompletion(task.id));
+                  },
+                  child: Semantics(
+                    label: "علامت‌گذاری به عنوان انجام شده",
+                    child: Container(
+                      width: 22,
+                      height: 22,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        border:
+                            Border.all(color: Colors.grey.shade300, width: 2),
+                      ),
                     ),
                   ),
                 ),
@@ -67,11 +75,18 @@ class PinnedCard extends StatelessWidget {
                   ),
                 ),
                 GestureDetector(
-                  onTap: () => _openFocus(context, task),
-                  child: const Icon(
-                    CupertinoIcons.play_circle_fill,
-                    size: 26,
-                    color: AppTheme.textMain,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    _openFocus(context, task);
+                  },
+                  child: Semantics(
+                    label: "شروع زمان تمرکز",
+                    button: true,
+                    child: const Icon(
+                      CupertinoIcons.play_circle_fill,
+                      size: 26,
+                      color: AppTheme.textMain,
+                    ),
                   ),
                 ),
               ],
