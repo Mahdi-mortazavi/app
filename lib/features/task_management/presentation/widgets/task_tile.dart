@@ -44,32 +44,41 @@ class _TaskTileState extends State<TaskTile> {
             ),
             child: Row(
               children: [
-                GestureDetector(
-                  onTap: () => context
-                      .read<TasksBloc>()
-                      .add(ToggleTaskCompletion(widget.task.id)),
-                  child: AnimatedContainer(
-                    duration: 200.ms,
-                    width: 26,
-                    height: 26,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color:
-                          widget.isDone ? AppTheme.green : Colors.transparent,
-                      border: Border.all(
-                        color: widget.isDone
-                            ? AppTheme.green
-                            : Colors.grey.shade300,
-                        width: 2,
+                Semantics(
+                  label: widget.isDone
+                      ? 'علامت زدن به عنوان انجام نشده'
+                      : 'علامت زدن به عنوان انجام شده',
+                  button: true,
+                  child: GestureDetector(
+                    onTap: () => context
+                        .read<TasksBloc>()
+                        .add(ToggleTaskCompletion(widget.task.id)),
+                    child: AnimatedContainer(
+                      duration: 200.ms,
+                      width: 26,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color:
+                            widget.isDone ? AppTheme.green : Colors.transparent,
+                        border: Border.all(
+                          color: widget.isDone
+                              ? AppTheme.green
+                              : Colors.grey.shade300,
+                          width: 2,
+                        ),
                       ),
+                      child: widget.isDone
+                          ? const Icon(
+                              CupertinoIcons.check_mark,
+                              size: 14,
+                              color: Colors.white,
+                            )
+                              .animate()
+                              .fade(duration: 200.ms)
+                              .scale(duration: 200.ms)
+                          : null,
                     ),
-                    child: widget.isDone
-                        ? const Icon(
-                            CupertinoIcons.check_mark,
-                            size: 14,
-                            color: Colors.white,
-                          ).animate().fade(duration: 200.ms).scale(duration: 200.ms)
-                        : null,
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -138,53 +147,85 @@ class _TaskTileState extends State<TaskTile> {
                   ),
                 ),
                 if (!widget.isDone)
-                  GestureDetector(
-                    onTap: () => _openFocus(context, widget.task),
-                    child: const Icon(
-                      CupertinoIcons.play_circle_fill,
-                      size: 30,
-                      color: AppTheme.textMain,
+                  Semantics(
+                    label: 'شروع حالت تمرکز',
+                    button: true,
+                    child: GestureDetector(
+                      onTap: () => _openFocus(context, widget.task),
+                      child: const Icon(
+                        CupertinoIcons.play_circle_fill,
+                        size: 30,
+                        color: AppTheme.textMain,
+                      ),
+                    ),
+                  ),
+                if (widget.task.subtasks.isNotEmpty)
+                  Semantics(
+                    label: _expanded ? 'مخفی‌سازی زیرکارها' : 'نمایش زیرکارها',
+                    button: true,
+                    child: GestureDetector(
+                      onTap: () => setState(() => _expanded = !_expanded),
+                      child: Padding(
+                        padding: const EdgeInsets.only(right: 8),
+                        child: const Icon(
+                          CupertinoIcons.chevron_down,
+                          size: 18,
+                          color: AppTheme.textSub,
+                        ).animate(target: _expanded ? 1 : 0).rotate(
+                              begin: 0,
+                              end: 0.5,
+                              duration: 200.ms,
+                            ),
+                      ),
                     ),
                   ),
               ],
             ),
           ),
         ),
-        if (_expanded && widget.task.subtasks.isNotEmpty)
-          Container(
-            margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-            decoration: BoxDecoration(
-              color: AppTheme.card,
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: Column(
-              children: widget.task.subtasks
-                  .map(
-                    (s) => ListTile(
-                      dense: true,
-                      leading: Icon(
-                        s.isCompleted
-                            ? CupertinoIcons.check_mark_circled_solid
-                            : CupertinoIcons.circle,
-                        color: s.isCompleted ? AppTheme.green : Colors.grey,
-                        size: 18,
-                      ),
-                      title: Text(
-                        s.title,
-                        style: TextStyle(
-                          decoration:
-                              s.isCompleted ? TextDecoration.lineThrough : null,
-                          fontSize: 13,
-                        ),
-                      ),
-                      onTap: () => context
-                          .read<TasksBloc>()
-                          .add(ToggleSubTaskCompletion(widget.task.id, s.id)),
-                    ),
-                  )
-                  .toList(),
-            ),
-          ),
+        AnimatedSize(
+          duration: 300.ms,
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: _expanded && widget.task.subtasks.isNotEmpty
+              ? Container(
+                  width: double.infinity,
+                  margin: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.card,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: Column(
+                    children: widget.task.subtasks
+                        .map(
+                          (s) => ListTile(
+                            dense: true,
+                            leading: Icon(
+                              s.isCompleted
+                                  ? CupertinoIcons.check_mark_circled_solid
+                                  : CupertinoIcons.circle,
+                              color:
+                                  s.isCompleted ? AppTheme.green : Colors.grey,
+                              size: 18,
+                            ),
+                            title: Text(
+                              s.title,
+                              style: TextStyle(
+                                decoration: s.isCompleted
+                                    ? TextDecoration.lineThrough
+                                    : null,
+                                fontSize: 13,
+                              ),
+                            ),
+                            onTap: () => context.read<TasksBloc>().add(
+                                ToggleSubTaskCompletion(widget.task.id, s.id)),
+                          ),
+                        )
+                        .toList(),
+                  ),
+                )
+              : const SizedBox(width: double.infinity, height: 0),
+        ),
       ],
     );
   }
