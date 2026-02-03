@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:app/features/task_management/domain/entities/task.dart';
 import 'package:app/features/task_management/presentation/bloc/tasks_bloc.dart';
@@ -45,31 +46,41 @@ class _TaskTileState extends State<TaskTile> {
             child: Row(
               children: [
                 GestureDetector(
-                  onTap: () => context
-                      .read<TasksBloc>()
-                      .add(ToggleTaskCompletion(widget.task.id)),
-                  child: AnimatedContainer(
-                    duration: 200.ms,
-                    width: 26,
-                    height: 26,
-                    decoration: BoxDecoration(
-                      shape: BoxShape.circle,
-                      color:
-                          widget.isDone ? AppTheme.green : Colors.transparent,
-                      border: Border.all(
-                        color: widget.isDone
-                            ? AppTheme.green
-                            : Colors.grey.shade300,
-                        width: 2,
+                  onTap: () {
+                    HapticFeedback.lightImpact();
+                    context
+                        .read<TasksBloc>()
+                        .add(ToggleTaskCompletion(widget.task.id));
+                  },
+                  child: Semantics(
+                    label: widget.isDone ? 'Mark as not done' : 'Mark as done',
+                    button: true,
+                    child: AnimatedContainer(
+                      duration: 200.ms,
+                      width: 26,
+                      height: 26,
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color:
+                            widget.isDone ? AppTheme.green : Colors.transparent,
+                        border: Border.all(
+                          color: widget.isDone
+                              ? AppTheme.green
+                              : Colors.grey.shade300,
+                          width: 2,
+                        ),
                       ),
+                      child: widget.isDone
+                          ? const Icon(
+                              CupertinoIcons.check_mark,
+                              size: 14,
+                              color: Colors.white,
+                            )
+                              .animate()
+                              .fade(duration: 200.ms)
+                              .scale(duration: 200.ms)
+                          : null,
                     ),
-                    child: widget.isDone
-                        ? const Icon(
-                            CupertinoIcons.check_mark,
-                            size: 14,
-                            color: Colors.white,
-                          ).animate().fade(duration: 200.ms).scale(duration: 200.ms)
-                        : null,
                   ),
                 ),
                 const SizedBox(width: 14),
@@ -202,7 +213,8 @@ class _TaskTileState extends State<TaskTile> {
     Navigator.of(context, rootNavigator: true).push(
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => FocusPage(task: task),
-        transitionsBuilder: (_, a, __, c) => FadeTransition(opacity: a, child: c),
+        transitionsBuilder: (_, a, __, c) =>
+            FadeTransition(opacity: a, child: c),
       ),
     );
   }
