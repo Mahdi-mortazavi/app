@@ -16,10 +16,6 @@ class SubTaskModel extends SubTask {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'title': title,
-      'isCompleted': isCompleted,
-    };
+    return {'id': id, 'title': title, 'isCompleted': isCompleted};
   }
 }

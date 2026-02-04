@@ -14,16 +14,15 @@ class TaskList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pinnedTasks = tasks.where((t) => t.isPinned && !t.isCompleted).toList();
-    final activeTasks = tasks.where((t) => !t.isPinned && !t.isCompleted).toList();
+    final pinnedTasks =
+        tasks.where((t) => t.isPinned && !t.isCompleted).toList();
+    final activeTasks =
+        tasks.where((t) => !t.isPinned && !t.isCompleted).toList();
     final completedTasks = tasks.where((t) => t.isCompleted).toList();
 
     return CustomScrollView(
       slivers: [
-        const SliverPersistentHeader(
-          delegate: MinimalHeader(),
-          pinned: true,
-        ),
+        const SliverPersistentHeader(delegate: MinimalHeader(), pinned: true),
         const SliverToBoxAdapter(child: SizedBox(height: 10)),
         const SliverToBoxAdapter(
           child: Padding(
@@ -137,5 +136,6 @@ class MinimalHeader extends SliverPersistentHeaderDelegate {
   double get minExtent => 90;
 
   @override
-  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) => false;
+  bool shouldRebuild(covariant SliverPersistentHeaderDelegate oldDelegate) =>
+      false;
 }

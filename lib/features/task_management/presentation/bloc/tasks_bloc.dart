@@ -40,7 +40,9 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
 
   Future<void> _onAddTask(AddTask event, Emitter<TasksState> emit) async {
     if (state is TasksLoadSuccess) {
-      final List<Task> updatedTasks = List.from((state as TasksLoadSuccess).tasks)..insert(0, event.task);
+      final List<Task> updatedTasks = List.from(
+        (state as TasksLoadSuccess).tasks,
+      )..insert(0, event.task);
       await saveTasks(updatedTasks);
       await notificationService.scheduleNotification(event.task);
       emit(TasksLoadSuccess(updatedTasks));
@@ -49,7 +51,9 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
 
   Future<void> _onUpdateTask(UpdateTask event, Emitter<TasksState> emit) async {
     if (state is TasksLoadSuccess) {
-      final List<Task> updatedTasks = (state as TasksLoadSuccess).tasks.map((task) {
+      final List<Task> updatedTasks = (state as TasksLoadSuccess).tasks.map((
+        task,
+      ) {
         return task.id == event.task.id ? event.task : task;
       }).toList();
       await saveTasks(updatedTasks);
@@ -60,16 +64,24 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
 
   Future<void> _onDeleteTask(DeleteTask event, Emitter<TasksState> emit) async {
     if (state is TasksLoadSuccess) {
-      final List<Task> updatedTasks = (state as TasksLoadSuccess).tasks.where((task) => task.id != event.id).toList();
+      final List<Task> updatedTasks = (state as TasksLoadSuccess)
+          .tasks
+          .where((task) => task.id != event.id)
+          .toList();
       await saveTasks(updatedTasks);
       await notificationService.cancelNotification(event.id);
       emit(TasksLoadSuccess(updatedTasks));
     }
   }
 
-  Future<void> _onToggleTaskCompletion(ToggleTaskCompletion event, Emitter<TasksState> emit) async {
+  Future<void> _onToggleTaskCompletion(
+    ToggleTaskCompletion event,
+    Emitter<TasksState> emit,
+  ) async {
     if (state is TasksLoadSuccess) {
-      final List<Task> updatedTasks = (state as TasksLoadSuccess).tasks.map((task) {
+      final List<Task> updatedTasks = (state as TasksLoadSuccess).tasks.map((
+        task,
+      ) {
         if (task.id == event.id) {
           final updatedTask = task.copyWith(
             isCompleted: !task.isCompleted,
@@ -91,9 +103,14 @@ class TasksBloc extends Bloc<TasksEvent, TasksState> {
     }
   }
 
-  Future<void> _onToggleSubTaskCompletion(ToggleSubTaskCompletion event, Emitter<TasksState> emit) async {
+  Future<void> _onToggleSubTaskCompletion(
+    ToggleSubTaskCompletion event,
+    Emitter<TasksState> emit,
+  ) async {
     if (state is TasksLoadSuccess) {
-      final List<Task> updatedTasks = (state as TasksLoadSuccess).tasks.map((task) {
+      final List<Task> updatedTasks = (state as TasksLoadSuccess).tasks.map((
+        task,
+      ) {
         if (task.id == event.taskId) {
           final updatedSubtasks = task.subtasks.map((subtask) {
             if (subtask.id == event.subTaskId) {

@@ -93,7 +93,9 @@ class _TaskFormState extends State<TaskForm> {
                         color: AppTheme.red,
                       ),
                       onPressed: () {
-                        context.read<TasksBloc>().add(DeleteTask(widget.task!.id));
+                        context.read<TasksBloc>().add(
+                              DeleteTask(widget.task!.id),
+                            );
                         Navigator.pop(context);
                       },
                     ),
@@ -198,15 +200,16 @@ class _TaskFormState extends State<TaskForm> {
                           onTap: () {
                             setState(() {
                               final index = _subs.indexOf(s);
-                              _subs[index] = s.copyWith(isCompleted: !s.isCompleted);
+                              _subs[index] = s.copyWith(
+                                isCompleted: !s.isCompleted,
+                              );
                             });
                           },
                           child: Icon(
                             s.isCompleted
                                 ? CupertinoIcons.check_mark_circled_solid
                                 : CupertinoIcons.circle,
-                            color:
-                                s.isCompleted ? AppTheme.green : Colors.grey,
+                            color: s.isCompleted ? AppTheme.green : Colors.grey,
                             size: 20,
                           ),
                         ),
@@ -273,7 +276,14 @@ class _TaskFormState extends State<TaskForm> {
             child: const Text("افزودن"),
             onPressed: () {
               if (t.isNotEmpty) {
-                setState(() => _subs.add(SubTask(id: DateTime.now().microsecondsSinceEpoch.toString(), title: t)));
+                setState(
+                  () => _subs.add(
+                    SubTask(
+                      id: DateTime.now().microsecondsSinceEpoch.toString(),
+                      title: t,
+                    ),
+                  ),
+                );
               }
               Navigator.pop(ctx);
             },
@@ -370,7 +380,11 @@ class _Badge extends StatelessWidget {
         child: Row(
           children: [
             if (icon != null) ...[
-              Icon(icon, size: 14, color: active ? Colors.white : AppTheme.textSub),
+              Icon(
+                icon,
+                size: 14,
+                color: active ? Colors.white : AppTheme.textSub,
+              ),
               const SizedBox(width: 4),
             ],
             Text(

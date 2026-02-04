@@ -18,10 +18,7 @@ class ProgressLoadSuccess extends ProgressState {
 
   const ProgressLoadSuccess({required this.data, required this.view});
 
-  ProgressLoadSuccess copyWith({
-    List<int>? data,
-    ChartView? view,
-  }) {
+  ProgressLoadSuccess copyWith({List<int>? data, ChartView? view}) {
     return ProgressLoadSuccess(
       data: data ?? this.data,
       view: view ?? this.view,

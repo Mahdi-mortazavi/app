@@ -18,7 +18,8 @@ class FocusPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => FocusBloc(vibrationService: sl())..add(StartFocus(task.duration * 60)),
+      create: (context) => FocusBloc(vibrationService: sl())
+        ..add(StartFocus(task.duration * 60)),
       child: BlocBuilder<FocusBloc, FocusState>(
         builder: (context, state) {
           final remaining = state is FocusInProgress
@@ -102,7 +103,9 @@ class FocusPage extends StatelessWidget {
                           Text(
                             "${(remaining ~/ 60).toString().padLeft(2, '0')}:${(remaining % 60).toString().padLeft(2, '0')}",
                             style: AppTheme.timerFont.copyWith(
-                              fontFeatures: [const FontFeature.tabularFigures()],
+                              fontFeatures: [
+                                const FontFeature.tabularFigures(),
+                              ],
                             ),
                           ),
                         ],
@@ -114,7 +117,9 @@ class FocusPage extends StatelessWidget {
                           children: [
                             _GlassBtn(
                               "-5",
-                              () => context.read<FocusBloc>().add(StartFocus(remaining - 300)),
+                              () => context.read<FocusBloc>().add(
+                                    StartFocus(remaining - 300),
+                                  ),
                             ),
                             const SizedBox(width: 32),
                             GestureDetector(
@@ -128,7 +133,10 @@ class FocusPage extends StatelessWidget {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(40),
                                 child: BackdropFilter(
-                                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                                  filter: ImageFilter.blur(
+                                    sigmaX: 10,
+                                    sigmaY: 10,
+                                  ),
                                   child: Container(
                                     width: 80,
                                     height: 80,
@@ -151,14 +159,18 @@ class FocusPage extends StatelessWidget {
                             const SizedBox(width: 32),
                             _GlassBtn(
                               "+5",
-                              () => context.read<FocusBloc>().add(StartFocus(remaining + 300)),
+                              () => context.read<FocusBloc>().add(
+                                    StartFocus(remaining + 300),
+                                  ),
                             ),
                           ],
                         )
                       else
                         CupertinoButton(
                           onPressed: () {
-                            context.read<TasksBloc>().add(ToggleTaskCompletion(task.id));
+                            context.read<TasksBloc>().add(
+                                  ToggleTaskCompletion(task.id),
+                                );
                             Navigator.pop(context);
                           },
                           child: Container(

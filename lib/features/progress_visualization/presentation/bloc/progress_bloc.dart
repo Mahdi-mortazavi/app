@@ -49,22 +49,28 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
 
   List<int> _getChartData(List<Task> allTasks, ChartView view) {
     final now = DateTime.now();
-    final completed = allTasks.where((t) => t.isCompleted && t.completionDate != null);
+    final completed = allTasks.where(
+      (t) => t.isCompleted && t.completionDate != null,
+    );
 
     switch (view) {
       case ChartView.daily:
         return List.generate(7, (i) {
           final day = now.subtract(Duration(days: 6 - i));
           return completed
-              .where((t) =>
-                  t.completionDate!.year == day.year &&
-                  t.completionDate!.month == day.month &&
-                  t.completionDate!.day == day.day)
+              .where(
+                (t) =>
+                    t.completionDate!.year == day.year &&
+                    t.completionDate!.month == day.month &&
+                    t.completionDate!.day == day.day,
+              )
               .length;
         });
       case ChartView.weekly:
         return List.generate(4, (i) {
-          final weekStart = now.subtract(Duration(days: (now.weekday + 1) % 7 + (3 - i) * 7));
+          final weekStart = now.subtract(
+            Duration(days: (now.weekday + 1) % 7 + (3 - i) * 7),
+          );
           return completed.where((t) {
             final cd = t.completionDate!;
             return cd.isAfter(weekStart) &&
@@ -75,9 +81,11 @@ class ProgressBloc extends Bloc<ProgressEvent, ProgressState> {
         return List.generate(6, (i) {
           final date = DateTime(now.year, now.month - (5 - i), 1);
           return completed
-              .where((t) =>
-                  t.completionDate!.year == date.year &&
-                  t.completionDate!.month == date.month)
+              .where(
+                (t) =>
+                    t.completionDate!.year == date.year &&
+                    t.completionDate!.month == date.month,
+              )
               .length;
         });
     }
