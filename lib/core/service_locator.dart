@@ -13,12 +13,14 @@ final sl = GetIt.instance;
 
 Future<void> init() async {
   // BLoCs
-  sl.registerFactory(() => TasksBloc(
-        getTasks: sl(),
-        saveTasks: sl(),
-        notificationService: sl(),
-        vibrationService: sl(),
-      ));
+  sl.registerFactory(
+    () => TasksBloc(
+      getTasks: sl(),
+      saveTasks: sl(),
+      notificationService: sl(),
+      vibrationService: sl(),
+    ),
+  );
 
   // Use cases
   sl.registerLazySingleton(() => GetTasks(sl()));
@@ -26,14 +28,18 @@ Future<void> init() async {
 
   // Repositories
   sl.registerLazySingleton<TaskRepository>(
-      () => TaskRepositoryImpl(localDataSource: sl()));
+    () => TaskRepositoryImpl(localDataSource: sl()),
+  );
 
   // Data sources
   sl.registerLazySingleton<TaskLocalDataSource>(
-      () => TaskLocalDataSourceImpl(sharedPreferences: sl()));
+    () => TaskLocalDataSourceImpl(sharedPreferences: sl()),
+  );
 
   // Services
-  sl.registerLazySingleton<NotificationService>(() => NotificationServiceImpl());
+  sl.registerLazySingleton<NotificationService>(
+    () => NotificationServiceImpl(),
+  );
   sl.registerLazySingleton<VibrationService>(() => VibrationServiceImpl());
 
   // External

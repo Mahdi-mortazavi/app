@@ -27,11 +27,13 @@ class TaskRepositoryImpl implements TaskRepository {
         isPinned: task.isPinned,
         isCompleted: task.isCompleted,
         subtasks: task.subtasks
-            .map((subtask) => SubTaskModel(
-                  id: subtask.id,
-                  title: subtask.title,
-                  isCompleted: subtask.isCompleted,
-                ))
+            .map(
+              (subtask) => SubTaskModel(
+                id: subtask.id,
+                title: subtask.title,
+                isCompleted: subtask.isCompleted,
+              ),
+            )
             .toList(),
         completionDate: task.completionDate,
       );

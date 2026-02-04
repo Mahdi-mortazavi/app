@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
-import 'package:flutter_local_notifications/flutter_local_notifications.dart' as fln;
+import 'package:flutter_local_notifications/flutter_local_notifications.dart'
+    as fln;
 import 'package:permission_handler/permission_handler.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -9,9 +10,7 @@ import 'package:device_info_plus/device_info_plus.dart';
 
 // Abstract class defining the notification service interface
 abstract class NotificationService {
-  Future<void> init({
-    required Function(int) onNotificationTapped,
-  });
+  Future<void> init({required Function(int) onNotificationTapped});
   Future<bool> requestPermission();
   Future<void> scheduleNotification(Task task);
   Future<void> cancelNotification(int id);
@@ -23,9 +22,7 @@ class NotificationServiceImpl implements NotificationService {
       fln.FlutterLocalNotificationsPlugin();
 
   @override
-  Future<void> init({
-    required Function(int) onNotificationTapped,
-  }) async {
+  Future<void> init({required Function(int) onNotificationTapped}) async {
     if (kIsWeb) return;
 
     tz.initializeTimeZones();
@@ -85,8 +82,8 @@ class NotificationServiceImpl implements NotificationService {
     if (task.reminder != null &&
         !task.isCompleted &&
         task.reminder!.isAfter(DateTime.now())) {
-
-      final bool hasExactAlarmPermission = await Permission.scheduleExactAlarm.isGranted;
+      final bool hasExactAlarmPermission =
+          await Permission.scheduleExactAlarm.isGranted;
 
       try {
         await _notifications.zonedSchedule(

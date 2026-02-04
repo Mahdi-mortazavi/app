@@ -83,7 +83,8 @@ void main() {
         when(mockGetTasks()).thenAnswer((_) async => [tTask]);
         return tasksBloc;
       },
-      act: (bloc) => bloc.add(UpdateTask(tTask.copyWith(title: 'Updated Task'))),
+      act: (bloc) =>
+          bloc.add(UpdateTask(tTask.copyWith(title: 'Updated Task'))),
       seed: () => TasksLoadSuccess([tTask]),
       expect: () => [
         TasksLoadSuccess([tTask.copyWith(title: 'Updated Task')]),

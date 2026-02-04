@@ -11,11 +11,7 @@ class SubTask extends Equatable {
     this.isCompleted = false,
   });
 
-  SubTask copyWith({
-    String? id,
-    String? title,
-    bool? isCompleted,
-  }) {
+  SubTask copyWith({String? id, String? title, bool? isCompleted}) {
     return SubTask(
       id: id ?? this.id,
       title: title ?? this.title,

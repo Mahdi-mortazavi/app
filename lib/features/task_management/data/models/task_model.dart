@@ -30,7 +30,8 @@ class TaskModel extends Task {
       title: json['title'],
       category: json['category'],
       duration: json['duration'],
-      reminder: json['reminder'] != null ? DateTime.parse(json['reminder']) : null,
+      reminder:
+          json['reminder'] != null ? DateTime.parse(json['reminder']) : null,
       isPinned: json['isPinned'],
       isCompleted: json['isCompleted'],
       subtasks: (json['subtasks'] as List)

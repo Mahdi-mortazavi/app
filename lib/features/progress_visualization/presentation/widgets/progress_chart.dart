@@ -33,7 +33,10 @@ class ProgressChart extends StatelessWidget {
                           getTooltipItem: (group, groupIndex, rod, rodIndex) =>
                               BarTooltipItem(
                             rod.toY.round().toString(),
-                            const TextStyle(color: Colors.white, fontSize: 12),
+                            const TextStyle(
+                              color: Colors.white,
+                              fontSize: 12,
+                            ),
                           ),
                         ),
                       ),

@@ -33,7 +33,9 @@ class PinnedCard extends StatelessWidget {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 GestureDetector(
-                  onTap: () => context.read<TasksBloc>().add(ToggleTaskCompletion(task.id)),
+                  onTap: () => context.read<TasksBloc>().add(
+                        ToggleTaskCompletion(task.id),
+                      ),
                   child: Container(
                     width: 22,
                     height: 22,
@@ -61,10 +63,7 @@ class PinnedCard extends StatelessWidget {
               children: [
                 Text(
                   "${task.duration} دقیقه",
-                  style: const TextStyle(
-                    fontSize: 11,
-                    color: AppTheme.textSub,
-                  ),
+                  style: const TextStyle(fontSize: 11, color: AppTheme.textSub),
                 ),
                 GestureDetector(
                   onTap: () => _openFocus(context, task),
@@ -95,7 +94,8 @@ class PinnedCard extends StatelessWidget {
     Navigator.of(context, rootNavigator: true).push(
       PageRouteBuilder(
         pageBuilder: (_, __, ___) => FocusPage(task: task),
-        transitionsBuilder: (_, a, __, c) => FadeTransition(opacity: a, child: c),
+        transitionsBuilder: (_, a, __, c) =>
+            FadeTransition(opacity: a, child: c),
       ),
     );
   }
