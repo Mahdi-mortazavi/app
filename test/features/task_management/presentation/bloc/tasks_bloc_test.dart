@@ -11,31 +11,51 @@ import 'package:app/features/task_management/presentation/bloc/tasks_state.dart'
 import 'package:app/features/task_management/domain/entities/task.dart';
 import 'package:app/features/task_management/domain/entities/sub_task.dart';
 
-class MockGetTasks extends Mock implements GetTasks {}
+class FakeGetTasks extends Fake implements GetTasks {
+  List<Task> tasks = [];
+  @override
+  Future<List<Task>> call() async => tasks;
+}
 
-class MockSaveTasks extends Mock implements SaveTasks {}
+class FakeSaveTasks extends Fake implements SaveTasks {
+  @override
+  Future<void> call(List<Task> tasks) async {}
+}
 
-class MockNotificationService extends Mock implements NotificationService {}
+class FakeNotificationService extends Fake implements NotificationService {
+  @override
+  Future<void> scheduleNotification(Task task) async {}
+  @override
+  Future<void> cancelNotification(int id) async {}
+  @override
+  Future<void> init({required Function(int) onNotificationTapped}) async {}
+}
 
-class MockVibrationService extends Mock implements VibrationService {}
+class FakeVibrationService extends Fake implements VibrationService {
+  @override
+  Future<void> vibrateSuccess() async {}
+  @override
+  Future<void> vibrateLight() async {}
+}
 
 void main() {
   late TasksBloc tasksBloc;
-  late MockGetTasks mockGetTasks;
-  late MockSaveTasks mockSaveTasks;
-  late MockNotificationService mockNotificationService;
-  late MockVibrationService mockVibrationService;
+  late FakeGetTasks fakeGetTasks;
+  late FakeSaveTasks fakeSaveTasks;
+  late FakeNotificationService fakeNotificationService;
+  late FakeVibrationService fakeVibrationService;
 
   setUp(() {
-    mockGetTasks = MockGetTasks();
-    mockSaveTasks = MockSaveTasks();
-    mockNotificationService = MockNotificationService();
-    mockVibrationService = MockVibrationService();
+    fakeGetTasks = FakeGetTasks();
+    fakeSaveTasks = FakeSaveTasks();
+    fakeNotificationService = FakeNotificationService();
+    fakeVibrationService = FakeVibrationService();
+
     tasksBloc = TasksBloc(
-      getTasks: mockGetTasks,
-      saveTasks: mockSaveTasks,
-      notificationService: mockNotificationService,
-      vibrationService: mockVibrationService,
+      getTasks: fakeGetTasks,
+      saveTasks: fakeSaveTasks,
+      notificationService: fakeNotificationService,
+      vibrationService: fakeVibrationService,
     );
   });
 
@@ -54,7 +74,7 @@ void main() {
     blocTest<TasksBloc, TasksState>(
       'emits [TasksLoadInProgress, TasksLoadSuccess] when LoadTasks is added.',
       build: () {
-        when(mockGetTasks()).thenAnswer((_) async => [tTask]);
+        fakeGetTasks.tasks = [tTask];
         return tasksBloc;
       },
       act: (bloc) => bloc.add(LoadTasks()),
@@ -67,7 +87,7 @@ void main() {
     blocTest<TasksBloc, TasksState>(
       'emits [TasksLoadSuccess] when AddTask is added.',
       build: () {
-        when(mockGetTasks()).thenAnswer((_) async => []);
+        fakeGetTasks.tasks = [];
         return tasksBloc;
       },
       act: (bloc) => bloc.add(AddTask(tTask)),
@@ -80,7 +100,7 @@ void main() {
     blocTest<TasksBloc, TasksState>(
       'emits [TasksLoadSuccess] when UpdateTask is added.',
       build: () {
-        when(mockGetTasks()).thenAnswer((_) async => [tTask]);
+        fakeGetTasks.tasks = [tTask];
         return tasksBloc;
       },
       act: (bloc) => bloc.add(UpdateTask(tTask.copyWith(title: 'Updated Task'))),
@@ -93,7 +113,7 @@ void main() {
     blocTest<TasksBloc, TasksState>(
       'emits [TasksLoadSuccess] when DeleteTask is added.',
       build: () {
-        when(mockGetTasks()).thenAnswer((_) async => [tTask]);
+        fakeGetTasks.tasks = [tTask];
         return tasksBloc;
       },
       act: (bloc) => bloc.add(DeleteTask(tTask.id)),
@@ -106,7 +126,7 @@ void main() {
     blocTest<TasksBloc, TasksState>(
       'emits [TasksLoadSuccess] when ToggleTaskCompletion is added.',
       build: () {
-        when(mockGetTasks()).thenAnswer((_) async => [tTask]);
+        fakeGetTasks.tasks = [tTask];
         return tasksBloc;
       },
       act: (bloc) => bloc.add(ToggleTaskCompletion(tTask.id)),
@@ -123,7 +143,7 @@ void main() {
     blocTest<TasksBloc, TasksState>(
       'emits [TasksLoadSuccess] when ToggleSubTaskCompletion is added.',
       build: () {
-        when(mockGetTasks()).thenAnswer((_) async => [tTask]);
+        fakeGetTasks.tasks = [tTask];
         return tasksBloc;
       },
       act: (bloc) => bloc.add(ToggleSubTaskCompletion(tTask.id, tSubTask.id)),
