@@ -12,25 +12,70 @@
   <p style="font-size: 1.1em; color: #666;">
     <b>هنرِ حذف کردن اضافات | The Art of Reduction</b>
   </p>
+  <p style="max-width: 560px; margin: 8px auto 0; color: #555;">
+    A minimalist <b>Flutter</b> to-do &amp; deep-focus timer app with a <b>Liquid Glass</b> UI,
+    a <b>Riverpod</b>-powered architecture, and a background-safe focus session that never drifts.
+  </p>
 
+  <p>
+    <a href="https://github.com/Mahdi-mortazavi/app/releases/latest">
+      <img src="https://img.shields.io/github/v/release/Mahdi-mortazavi/app?style=for-the-badge&label=latest&color=0A84FF" alt="Latest release">
+    </a>
+    <a href="https://github.com/Mahdi-mortazavi/app/releases">
+      <img src="https://img.shields.io/github/downloads/Mahdi-mortazavi/app/total?style=for-the-badge&color=32D74B" alt="Downloads">
+    </a>
+    <a href="https://github.com/Mahdi-mortazavi/app/stargazers">
+      <img src="https://img.shields.io/github/stars/Mahdi-mortazavi/app?style=for-the-badge&color=FF9F0A" alt="Stars">
+    </a>
+  </p>
   <p>
     <a href="https://flutter.dev">
       <img src="https://img.shields.io/badge/Flutter-3.19%2B-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter">
     </a>
-    <a href="https://dart.dev">
-      <img src="https://img.shields.io/badge/Dart-3.0%2B-0175C2?style=for-the-badge&logo=dart&logoColor=white" alt="Dart">
+    <a href="https://riverpod.dev">
+      <img src="https://img.shields.io/badge/State-Riverpod-1B1B1F?style=for-the-badge&logo=dart&logoColor=white" alt="Riverpod">
     </a>
     <a href="#">
-      <img src="https://img.shields.io/badge/Design-Minimalist-222222?style=for-the-badge&logo=apple&logoColor=white" alt="Design">
+      <img src="https://img.shields.io/badge/Design-Liquid_Glass-222222?style=for-the-badge&logo=apple&logoColor=white" alt="Design">
     </a>
   </p>
 
   <!-- DOWNLOAD BADGE -->
   <a href="https://github.com/Mahdi-mortazavi/app/releases/latest">
-    <img src="https://img.shields.io/badge/⬇️_دانلود_نسخه_اندروید_(APK)-3DDC84?style=for-the-badge&logo=android&logoColor=white&height=50" height="40">
+    <img src="https://img.shields.io/badge/⬇️_دانلود_نسخه_اندروید_(arm64--v8a_APK)-3DDC84?style=for-the-badge&logo=android&logoColor=white&height=50" height="40">
   </a>
 
 </div>
+
+<br>
+<hr>
+
+<!-- ======================================================= -->
+<!-- INSTALL                                                 -->
+<!-- ======================================================= -->
+<h2 align="center">📲 نصب / Install</h2>
+
+<div align="center">
+
+جدیدترین نسخه‌ی اندروید (بیلد `arm64-v8a`، سازگار با اکثر گوشی‌های ۲۰۱۵ به بعد) را از صفحه‌ی
+**[Releases](https://github.com/Mahdi-mortazavi/app/releases/latest)** دانلود کنید.
+
+Download the latest Android build (`arm64-v8a`) from the **[Releases page](https://github.com/Mahdi-mortazavi/app/releases/latest)**.
+
+</div>
+
+<details>
+<summary><b>🛠️ ساخت از سورس / Build from source</b></summary>
+
+```bash
+git clone https://github.com/Mahdi-mortazavi/app.git
+cd app
+flutter pub get
+flutter run                       # debug, on a connected device/emulator
+flutter build apk --release --target-platform android-arm64 --split-per-abi
+```
+
+</details>
 
 <br>
 <hr>
@@ -115,12 +160,23 @@
 
 ## 🇺🇸 About the Project
 
-**Nava** is a rebellion against cluttered productivity tools. Developed with **Flutter**, it emphasizes "Invisible Design"—where the interface steps back so you can focus on your tasks.
+**Nava** is a minimalist **Flutter task management & focus timer app** — a rebellion against
+cluttered to-do lists. It pairs a **Liquid Glass** interface (deep blurs, tint gradients, hairline
+borders, physics-based micro-interactions) with a clean **Riverpod** architecture, so the UI stays
+buttery-smooth while the codebase stays maintainable.
 
 ### 🌟 Key Features
-*   **Gestural Interface:** Swipe to complete, hold to edit. No tiny buttons.
-*   **Smart Animations:** The UI breathes and bounces, making productivity feel organic.
-*   **Performance:** Optimized for 60fps+ rendering on Android & iOS.
+*   **🧊 Liquid Glass UI** — translucent, blurred glass surfaces replace flat cards everywhere,
+    with organic press animations instead of static taps.
+*   **🎯 Deep Focus Timer** — a background-safe session timer: time is derived from wall-clock
+    deltas, not a counter, so it never drifts even if the app is suspended or killed mid-session.
+*   **📳 Haptic Engine** — distinct tactile patterns for success, warnings, selection, and timer
+    completion, instead of one generic vibration.
+*   **⏰ Reliable Reminders** — exact alarms with automatic fallback, real timezone resolution, and
+    recovery for reminders missed while the app was closed.
+*   **📌 Pins, Subtasks & Categories** — organize tasks the way you actually think, not the way a
+    spreadsheet does.
+*   **🌗 Persian (Jalali) Calendar** — built-in, first-class support for the Persian date system.
 
 </div>
 
@@ -152,6 +208,17 @@
   </table>
 
   <br>
-  <p>Made with ❤️ in <b>Flutter</b></p>
-  
+  <p>Made with ❤️ in <b>Flutter</b> &middot; State managed by <b>Riverpod</b></p>
+
+  <br>
+
+  <p>
+    اگه Nava رو دوست داشتید، یک ⭐ فراموش نشه — کمک می‌کنه اپ بیشتر دیده بشه!<br>
+    <sub>If you like Nava, please consider starring the repo — it genuinely helps others find it.</sub>
+  </p>
+
+  <a href="https://github.com/Mahdi-mortazavi/app/stargazers">
+    <img src="https://img.shields.io/badge/⭐_Star_this_repo-FFD60A?style=for-the-badge&logo=github&logoColor=black" alt="Star this repo">
+  </a>
+
 </div>

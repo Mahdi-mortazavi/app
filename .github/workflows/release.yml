@@ -1,0 +1,94 @@
+name: Release (Android arm64-v8a)
+
+# Builds a release APK for the arm64-v8a architecture (the vast majority of
+# real Android devices) and publishes it as a polished GitHub Release.
+#
+# Trigger either by pushing a tag like "v1.1.0", or manually from the
+# Actions tab with a version to use.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'Version tag to release, e.g. v1.1.0'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Resolve version
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "version=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Build arm64-v8a release APK
+        run: flutter build apk --release --target-platform android-arm64 --split-per-abi
+
+      - name: Rename artifact for a clean download name
+        id: artifact
+        run: |
+          version="${{ steps.version.outputs.version }}"
+          src="build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
+          dest="build/app/outputs/flutter-apk/Nava-${version}-android-arm64.apk"
+          mv "$src" "$dest"
+          echo "path=$dest" >> "$GITHUB_OUTPUT"
+          echo "name=$(basename "$dest")" >> "$GITHUB_OUTPUT"
+
+      - name: Publish GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.version }}
+          name: "🍎 Nava ${{ steps.version.outputs.version }}"
+          generate_release_notes: true
+          files: ${{ steps.artifact.outputs.path }}
+          body: |
+            <div align="center">
+
+            ### هنرِ حذف کردن اضافات — The Art of Reduction
+
+            </div>
+
+            یک تجربه‌ی متمرکز و بی‌نویز برای مدیریت کارها و تمرکز عمیق — ساخته‌شده با Flutter، معماری Riverpod و رابط کاربری شیشه‌ای (Liquid Glass).
+
+            ### 📦 دانلود / Download
+
+            | فایل | معماری | حداقل نسخه اندروید |
+            |---|---|---|
+            | **`${{ steps.artifact.outputs.name }}`** | `arm64-v8a` | Android 5.0 (API 21)+ |
+
+            > این بیلد فقط برای معماری **arm64-v8a** است — معماری تقریباً تمام گوشی‌ها و تبلت‌های اندرویدی تولید ۲۰۱۵ به بعد.
+            > This build targets **arm64-v8a** only — the architecture used by virtually every Android phone made since ~2015.
+
+            ### ✨ نکات این نسخه / Highlights
+            - رابط کاربری Liquid Glass با بلور و انیمیشن‌های ارگانیک در سراسر اپ
+            - موتور هپتیک اختصاصی با الگوی لمسی جدا برای هر رویداد (تکمیل کار، هشدار، پایان تایمر)
+            - یادآوری‌های دقیق با پشتیبانی از منطقه‌ی زمانی و بازیابی یادآوری‌های ازدست‌رفته
+            - تایمر تمرکز مقاوم در برابر بک‌گراند شدن اپ — بدون drift، حتی اگر پردازه توسط سیستم‌عامل معلق شود
+
+            ---
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
