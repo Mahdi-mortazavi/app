@@ -23,13 +23,13 @@ class MinimalHeader extends SliverPersistentHeaderDelegate {
               begin: Alignment.topCenter,
               end: Alignment.bottomCenter,
               colors: [
-                AppColors.canvasTop.withOpacity(0.75),
-                AppColors.canvasTop.withOpacity(0.45),
+                AppColors.canvasTop.withValues(alpha: 0.75),
+                AppColors.canvasTop.withValues(alpha: 0.45),
               ],
             ),
             border: Border(
               bottom: BorderSide(
-                color: CupertinoColors.white.withOpacity(0.4 * collapse),
+                color: CupertinoColors.white.withValues(alpha: 0.4 * collapse),
                 width: 0.6,
               ),
             ),

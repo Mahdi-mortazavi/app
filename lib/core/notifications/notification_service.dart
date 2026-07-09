@@ -111,7 +111,7 @@ class NotificationService {
     if (!time.isAfter(DateTime.now())) return;
 
     final scheduled = tz.TZDateTime.from(time, tz.local);
-    final details = const fln.NotificationDetails(
+    const details = fln.NotificationDetails(
       android: _channel,
       iOS: fln.DarwinNotificationDetails(),
     );

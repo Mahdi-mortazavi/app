@@ -50,14 +50,14 @@ class LiquidGlass extends StatelessWidget {
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                tint.withOpacity(onDark ? 0.14 : tintOpacity),
-                tint.withOpacity(onDark ? 0.05 : tintOpacity * 0.45),
+                tint.withValues(alpha: onDark ? 0.14 : tintOpacity),
+                tint.withValues(alpha: onDark ? 0.05 : tintOpacity * 0.45),
               ],
             ),
-            border: Border.all(color: borderColor.withOpacity(0.35), width: 0.6),
+            border: Border.all(color: borderColor.withValues(alpha: 0.35), width: 0.6),
             boxShadow: [
               BoxShadow(
-                color: CupertinoColors.black.withOpacity(onDark ? 0.35 : 0.06),
+                color: CupertinoColors.black.withValues(alpha: onDark ? 0.35 : 0.06),
                 blurRadius: 24,
                 offset: const Offset(0, 10),
               ),

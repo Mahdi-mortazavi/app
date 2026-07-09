@@ -63,7 +63,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       child: ColoredBox(
-        color: CupertinoColors.white.withOpacity(0.92),
+        color: CupertinoColors.white.withValues(alpha: 0.92),
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
@@ -81,7 +81,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.inkSubdued.withOpacity(0.3),
+                      color: AppColors.inkSubdued.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -97,7 +97,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                     if (widget.task != null)
                       CupertinoButton(
                         padding: EdgeInsets.zero,
-                        minSize: 0,
+                        minimumSize: Size.zero,
                         onPressed: _delete,
                         child: const Icon(
                           CupertinoIcons.trash,
@@ -114,7 +114,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: AppColors.inkSubdued.withOpacity(0.15),
+                        color: AppColors.inkSubdued.withValues(alpha: 0.15),
                       ),
                     ),
                   ),
@@ -180,7 +180,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                     ),
                     CupertinoButton(
                       padding: EdgeInsets.zero,
-                      minSize: 0,
+                      minimumSize: Size.zero,
                       onPressed: _addSubtask,
                       child: const Icon(
                         CupertinoIcons.add_circled,
@@ -195,7 +195,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.canvasTop.withOpacity(0.6),
+                      color: AppColors.canvasTop.withValues(alpha: 0.6),
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Row(
@@ -248,7 +248,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                 const SizedBox(height: 24),
                 CupertinoButton(
                   color: AppColors.ink,
-                  disabledColor: AppColors.ink.withOpacity(0.3),
+                  disabledColor: AppColors.ink.withValues(alpha: 0.3),
                   borderRadius: BorderRadius.circular(16),
                   // Disabled (not silently no-op) until there's a title, so the
                   // button's state always matches what tapping it will do.

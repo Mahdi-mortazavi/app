@@ -19,7 +19,7 @@ Future<bool> ensureNotificationPermission(BuildContext context, WidgetRef ref) a
 
   final primed = await showCupertinoModalPopup<bool>(
     context: context,
-    barrierColor: CupertinoColors.black.withOpacity(0.35),
+    barrierColor: CupertinoColors.black.withValues(alpha: 0.35),
     builder: (context) => const _PermissionPrimerSheet(),
   );
 
