@@ -10,6 +10,7 @@ import '../../providers/task_providers.dart';
 import '../navigation.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/minimal_header.dart';
+import '../widgets/momentum_card.dart';
 import '../widgets/pinned_card.dart';
 import '../widgets/task_tile.dart';
 
@@ -44,6 +45,16 @@ class HomeScreen extends ConsumerWidget {
                   pinned: true,
                 ),
                 const SliverToBoxAdapter(child: SizedBox(height: AppSpacing.sm)),
+                // Momentum summary (streak + daily goal) sits above the list
+                // once the user has any tasks, so the first thing they see is
+                // their progress, not an empty scoreboard.
+                if (allTasks.isNotEmpty)
+                  const SliverToBoxAdapter(
+                    child: Padding(
+                      padding: EdgeInsets.only(bottom: AppSpacing.lg),
+                      child: MomentumCard(),
+                    ),
+                  ),
                 if (pinned.isNotEmpty)
                   SliverToBoxAdapter(
                     child: SizedBox(
