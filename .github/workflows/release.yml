@@ -1,52 +1,53 @@
-name: Release (Android arm64-v8a)
+name: Release
 
-# Builds a release APK for the arm64-v8a architecture (the vast majority of
-# real Android devices) and publishes it as a polished GitHub Release.
+# Fully autonomous release pipeline.
 #
-# Trigger either by pushing a tag like "v1.1.0", or manually from the
-# Actions tab with a version to use.
+# Flow:
+#   1. You merge Conventional-Commit PRs into `main` (feat:, fix:, perf: …).
+#   2. release-please reads those commits and maintains a "release PR" that
+#      bumps pubspec.yaml + CHANGELOG.md to the correct semver.
+#   3. When you merge that release PR, release-please tags the version and
+#      publishes a GitHub Release with auto-generated, categorized notes.
+#   4. In the SAME run, a quality-gated job builds the arm64-v8a APK and
+#      attaches it to that release.
+#
+# Nothing here needs a personal token: the build job is gated on
+# release-please's own output, so there is no cross-workflow event that the
+# default GITHUB_TOKEN would fail to trigger.
 on:
   push:
-    tags:
-      - 'v*.*.*'
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Version tag to release, e.g. v1.1.0'
-        required: true
+    branches: [main]
 
 permissions:
   contents: write
+  pull-requests: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build-and-release:
+  release-please:
+    runs-on: ubuntu-latest
+    outputs:
+      release_created: ${{ steps.rp.outputs.release_created }}
+      tag_name: ${{ steps.rp.outputs.tag_name }}
+    steps:
+      - id: rp
+        uses: googleapis/release-please-action@v4
+        with:
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json
+
+  build-apk:
+    needs: release-please
+    if: needs.release-please.outputs.release_created == 'true'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
-      - name: Resolve version
-        id: version
-        env:
-          RAW_VERSION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
-        run: |
-          # Sanitize: trim surrounding whitespace and any stray trailing dot,
-          # then require a clean vX.Y.Z shape. Prevents malformed release
-          # titles / asset names like "Nava-v1.1.0 -..." from a fat-fingered
-          # input, and reads the value via env (not string interpolation) so a
-          # crafted input can't inject shell.
-          version="$(printf '%s' "$RAW_VERSION" | tr -d '[:space:]')"
-          version="${version%.}"
-          if ! printf '%s' "$version" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'; then
-            echo "::error::Invalid version '$RAW_VERSION'. Expected vMAJOR.MINOR.PATCH (e.g. v1.2.0)."
-            exit 1
-          fi
-          echo "version=$version" >> "$GITHUB_OUTPUT"
-          echo "Resolved version: $version"
-
-      - uses: actions/setup-java@v4
+      - name: Checkout the released tag
+        uses: actions/checkout@v4
         with:
-          distribution: temurin
-          java-version: '17'
+          ref: ${{ needs.release-please.outputs.tag_name }}
 
       - uses: subosito/flutter-action@v2
         with:
@@ -55,50 +56,28 @@ jobs:
 
       - run: flutter pub get
 
+      # Quality gate — never attach an artifact from code that doesn't pass.
+      - name: Analyze
+        run: flutter analyze
+
+      - name: Test
+        run: flutter test
+
       - name: Build arm64-v8a release APK
         run: flutter build apk --release --target-platform android-arm64 --split-per-abi
 
-      - name: Rename artifact for a clean download name
+      - name: Rename artifact
         id: artifact
+        env:
+          TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
-          version="${{ steps.version.outputs.version }}"
           src="build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
-          dest="build/app/outputs/flutter-apk/Nava-${version}-android-arm64.apk"
+          dest="build/app/outputs/flutter-apk/Nava-${TAG}-android-arm64.apk"
           mv "$src" "$dest"
           echo "path=$dest" >> "$GITHUB_OUTPUT"
-          echo "name=$(basename "$dest")" >> "$GITHUB_OUTPUT"
 
-      - name: Publish GitHub Release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ steps.version.outputs.version }}
-          name: "🍎 Nava ${{ steps.version.outputs.version }}"
-          generate_release_notes: true
-          files: ${{ steps.artifact.outputs.path }}
-          body: |
-            <div align="center">
-
-            ### هنرِ حذف کردن اضافات — The Art of Reduction
-
-            </div>
-
-            یک تجربه‌ی متمرکز و بی‌نویز برای مدیریت کارها و تمرکز عمیق — ساخته‌شده با Flutter، معماری Riverpod و رابط کاربری شیشه‌ای (Liquid Glass).
-
-            ### 📦 دانلود / Download
-
-            | فایل | معماری | حداقل نسخه اندروید |
-            |---|---|---|
-            | **`${{ steps.artifact.outputs.name }}`** | `arm64-v8a` | Android 5.0 (API 21)+ |
-
-            > این بیلد فقط برای معماری **arm64-v8a** است — معماری تقریباً تمام گوشی‌ها و تبلت‌های اندرویدی تولید ۲۰۱۵ به بعد.
-            > This build targets **arm64-v8a** only — the architecture used by virtually every Android phone made since ~2015.
-
-            ### ✨ نکات این نسخه / Highlights
-            - رابط کاربری Liquid Glass با بلور و انیمیشن‌های ارگانیک در سراسر اپ
-            - موتور هپتیک اختصاصی با الگوی لمسی جدا برای هر رویداد (تکمیل کار، هشدار، پایان تایمر)
-            - یادآوری‌های دقیق با پشتیبانی از منطقه‌ی زمانی و بازیابی یادآوری‌های ازدست‌رفته
-            - تایمر تمرکز مقاوم در برابر بک‌گراند شدن اپ — بدون drift، حتی اگر پردازه توسط سیستم‌عامل معلق شود
-
-            ---
+      - name: Attach APK to the release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: gh release upload "$TAG" "${{ steps.artifact.outputs.path }}" --clobber

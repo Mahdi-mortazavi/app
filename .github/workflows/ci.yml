@@ -1,14 +1,21 @@
 name: CI
 
-# Static analysis + tests on every push and PR. This is the automated gate
-# that replaces "run flutter analyze/test locally" — the source of truth for
-# whether the app compiles and passes its tests.
+# Fast quality gate for every change before it reaches main.
+# Runs on pull requests and on pushes to any non-main branch. `main` itself is
+# verified by the PR that targets it and by the Release pipeline afterwards, so
+# we don't burn duplicate minutes re-checking it here.
 on:
   push:
-    branches: ['**']
+    branches-ignore: [main]
   pull_request:
     branches: [main]
   workflow_dispatch:
+
+# A newer commit on the same branch/PR cancels the in-flight run — you always
+# get feedback on your latest push, fast.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   analyze-and-test:
@@ -24,7 +31,8 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
-      - name: Verify formatting
+      # Informational: surfaces formatting drift without blocking the gate.
+      - name: Check formatting
         run: dart format --output=none --set-exit-if-changed .
         continue-on-error: true
 
