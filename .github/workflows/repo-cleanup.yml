@@ -1,0 +1,98 @@
+name: Repo Cleanup (branches, tags, releases)
+
+# Manually-triggered, one-time cleanup: deletes every branch except `main`,
+# and every release/tag except `v1.0.0`. Requires typing DELETE to run.
+on:
+  workflow_dispatch:
+    inputs:
+      confirm:
+        description: 'Type DELETE to confirm this irreversible cleanup'
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check confirmation
+        run: |
+          if [ "${{ github.event.inputs.confirm }}" != "DELETE" ]; then
+            echo "Confirmation text did not match 'DELETE'. Aborting without changes."
+            exit 1
+          fi
+
+      - name: Delete all branches except main
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          API: https://api.github.com/repos/${{ github.repository }}
+        run: |
+          set -e
+          branches=$(curl -s -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "$API/branches?per_page=100" | jq -r '.[].name' | grep -v '^main$')
+          echo "$branches" | while read -r b; do
+            [ -z "$b" ] && continue
+            code=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X DELETE \
+              -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+              "$API/git/refs/heads/$b")
+            if [ "$code" = "204" ]; then
+              echo "deleted branch: $b"
+            else
+              echo "FAILED ($code) branch: $b -- $(cat /tmp/resp.json)"
+            fi
+          done
+
+      - name: Delete all releases except v1.0.0 (and their tags)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          API: https://api.github.com/repos/${{ github.repository }}
+        run: |
+          set -e
+          releases=$(curl -s -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "$API/releases?per_page=100")
+          echo "$releases" | jq -c '.[] | select(.tag_name != "v1.0.0") | {id, tag_name}' | while read -r r; do
+            id=$(echo "$r" | jq -r '.id')
+            tag=$(echo "$r" | jq -r '.tag_name')
+
+            code=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X DELETE \
+              -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+              "$API/releases/$id")
+            if [ "$code" = "204" ]; then
+              echo "deleted release: $tag (id $id)"
+            else
+              echo "FAILED ($code) release: $tag -- $(cat /tmp/resp.json)"
+            fi
+
+            code=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X DELETE \
+              -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+              "$API/git/refs/tags/$tag")
+            if [ "$code" = "204" ]; then
+              echo "deleted tag: $tag"
+            else
+              echo "FAILED ($code) tag: $tag -- $(cat /tmp/resp.json)"
+            fi
+          done
+
+      - name: Delete any remaining tags except v1.0.0
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          API: https://api.github.com/repos/${{ github.repository }}
+        run: |
+          set -e
+          tags=$(curl -s -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+            "$API/tags?per_page=100" | jq -r '.[].name' | grep -v '^v1\.0\.0$')
+          echo "$tags" | while read -r t; do
+            [ -z "$t" ] && continue
+            code=$(curl -s -o /tmp/resp.json -w "%{http_code}" -X DELETE \
+              -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/vnd.github+json" \
+              "$API/git/refs/tags/$t")
+            if [ "$code" = "204" ]; then
+              echo "deleted tag: $t"
+            else
+              echo "FAILED ($code) tag: $t -- $(cat /tmp/resp.json)"
+            fi
+          done
+
+      - name: Done
+        run: echo "Cleanup finished. main and v1.0.0 were left untouched."
