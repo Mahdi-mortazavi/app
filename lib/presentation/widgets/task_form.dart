@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/app_typography.dart';
+import '../../core/utils/formatting.dart';
 import '../../data/models/sub_task.dart';
 import '../../data/models/task.dart';
 import '../../providers/task_providers.dart';
@@ -34,6 +35,9 @@ class _TaskFormState extends ConsumerState<TaskForm> {
     super.initState();
     final t = widget.task;
     _titleController = TextEditingController(text: t?.title ?? '');
+    // Rebuild on text change so the Save button reflects whether there's a
+    // non-empty title, instead of silently no-op'ing on an empty save.
+    _titleController.addListener(_onTitleChanged);
     if (t != null) {
       _category = t.category;
       _duration = t.duration;
@@ -43,8 +47,13 @@ class _TaskFormState extends ConsumerState<TaskForm> {
     }
   }
 
+  void _onTitleChanged() => setState(() {});
+
+  bool get _canSave => _titleController.text.trim().isNotEmpty;
+
   @override
   void dispose() {
+    _titleController.removeListener(_onTitleChanged);
     _titleController.dispose();
     super.dispose();
   }
@@ -125,7 +134,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                       ),
                       const SizedBox(width: 8),
                       GlassBadge(
-                        '$_duration دقیقه',
+                        Fmt.fa('$_duration دقیقه'),
                         icon: CupertinoIcons.timer,
                         onTap: () => setState(() {
                           final i = _durations.indexOf(_duration);
@@ -141,13 +150,21 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                       ),
                       const SizedBox(width: 8),
                       GlassBadge(
-                        _reminder != null
-                            ? '${_reminder!.hour}:${_reminder!.minute.toString().padLeft(2, '0')}'
-                            : 'یادآور',
-                        icon: CupertinoIcons.alarm,
+                        _reminder != null ? Fmt.timeOfDay(_reminder!) : 'یادآور',
+                        icon: _reminder != null
+                            ? CupertinoIcons.alarm_fill
+                            : CupertinoIcons.alarm,
                         active: _reminder != null,
                         onTap: _pickReminderTime,
                       ),
+                      if (_reminder != null) ...[
+                        const SizedBox(width: 8),
+                        GlassBadge(
+                          'حذف یادآور',
+                          icon: CupertinoIcons.xmark,
+                          onTap: () => setState(() => _reminder = null),
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -156,7 +173,9 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     Text(
-                      'زیرمجموعه (${_subtasks.where((e) => e.isCompleted).length}/${_subtasks.length})',
+                      Fmt.fa(
+                        'زیرمجموعه (${_subtasks.where((e) => e.isCompleted).length}/${_subtasks.length})',
+                      ),
                       style: AppTypography.caption,
                     ),
                     CupertinoButton(
@@ -229,8 +248,11 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                 const SizedBox(height: 24),
                 CupertinoButton(
                   color: AppColors.ink,
+                  disabledColor: AppColors.ink.withOpacity(0.3),
                   borderRadius: BorderRadius.circular(16),
-                  onPressed: _save,
+                  // Disabled (not silently no-op) until there's a title, so the
+                  // button's state always matches what tapping it will do.
+                  onPressed: _canSave ? _save : null,
                   child: const Text(
                     'ذخیره',
                     style: TextStyle(
@@ -277,24 +299,72 @@ class _TaskFormState extends ConsumerState<TaskForm> {
     );
   }
 
+  /// Builds a reminder for [hour]:[minute] today, or tomorrow if that moment
+  /// has already passed — so "remind me at 8:00" never silently drops because
+  /// 8:00 was earlier today.
+  DateTime _nextOccurrence(int hour, int minute) {
+    final now = DateTime.now();
+    var candidate = DateTime(now.year, now.month, now.day, hour, minute);
+    if (!candidate.isAfter(now)) {
+      candidate = candidate.add(const Duration(days: 1));
+    }
+    return candidate;
+  }
+
   Future<void> _pickReminderTime() async {
     final granted = await ensureNotificationPermission(context, ref);
     if (!granted || !mounted) return;
 
+    // Seed the picker with the current selection (or now) and only commit on
+    // "تایید", so scrolling the wheel doesn't thrash setState every frame.
+    final initial = _reminder ?? DateTime.now();
+    var pending = _nextOccurrence(initial.hour, initial.minute);
+
     await showCupertinoModalPopup<void>(
       context: context,
       builder: (popupContext) => Container(
-        height: 250,
+        height: 300,
         color: CupertinoColors.systemBackground.resolveFrom(popupContext),
-        child: CupertinoDatePicker(
-          mode: CupertinoDatePickerMode.time,
-          use24hFormat: true,
-          onDateTimeChanged: (t) {
-            final now = DateTime.now();
-            setState(
-              () => _reminder = DateTime(now.year, now.month, now.day, t.hour, t.minute),
-            );
-          },
+        child: SafeArea(
+          top: false,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    CupertinoButton(
+                      onPressed: () {
+                        setState(() => _reminder = null);
+                        Navigator.pop(popupContext);
+                      },
+                      child: const Text(
+                        'حذف',
+                        style: TextStyle(color: AppColors.accentRed),
+                      ),
+                    ),
+                    CupertinoButton(
+                      onPressed: () {
+                        setState(() => _reminder = pending);
+                        Navigator.pop(popupContext);
+                      },
+                      child: const Text('تایید'),
+                    ),
+                  ],
+                ),
+              ),
+              Expanded(
+                child: CupertinoDatePicker(
+                  mode: CupertinoDatePickerMode.time,
+                  use24hFormat: true,
+                  initialDateTime: initial,
+                  onDateTimeChanged: (t) =>
+                      pending = _nextOccurrence(t.hour, t.minute),
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );
