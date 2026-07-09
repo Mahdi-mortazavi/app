@@ -29,6 +29,17 @@
     </a>
   </p>
   <p>
+    <a href="https://github.com/Mahdi-mortazavi/app/actions/workflows/ci.yml">
+      <img src="https://img.shields.io/github/actions/workflow/status/Mahdi-mortazavi/app/ci.yml?style=flat-square&label=CI&logo=github" alt="CI status">
+    </a>
+    <a href="https://github.com/Mahdi-mortazavi/app/blob/main/CHANGELOG.md">
+      <img src="https://img.shields.io/badge/changelog-automated-8A2BE2?style=flat-square" alt="Changelog">
+    </a>
+    <a href="https://github.com/Mahdi-mortazavi/app/blob/main/docs/RELEASING.md">
+      <img src="https://img.shields.io/badge/release-autonomous-informational?style=flat-square" alt="Autonomous releases">
+    </a>
+  </p>
+  <p>
     <a href="https://flutter.dev">
       <img src="https://img.shields.io/badge/Flutter-3.19%2B-02569B?style=for-the-badge&logo=flutter&logoColor=white" alt="Flutter">
     </a>
