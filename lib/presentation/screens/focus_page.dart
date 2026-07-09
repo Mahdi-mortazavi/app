@@ -128,7 +128,7 @@ class _FocusPageState extends ConsumerState<FocusPage> with WidgetsBindingObserv
                   _TimerReadout(accent: _glowColor, reduceMotion: reduceMotion),
                 const SizedBox(height: 48),
                 if (completed)
-                  _DoneButton(onTap: () => Navigator.pop(context))
+                  _CompletionActions(task: widget.task)
                 else
                   const _Controls(),
                 const Spacer(flex: 2),
@@ -393,32 +393,90 @@ class _CompletionBadge extends StatelessWidget {
   }
 }
 
-class _DoneButton extends StatelessWidget {
-  const _DoneButton({required this.onTap});
+/// Post-session actions. Closes the open loop (Zeigarnik) by offering to mark
+/// the task done, and nudges a short recovery break (ultradian rhythm).
+class _CompletionActions extends ConsumerWidget {
+  const _CompletionActions({required this.task});
 
+  final Task task;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final isTaskDone = ref.watch(
+      tasksProvider.select((async) {
+        final list = async.valueOrNull;
+        if (list == null) return true;
+        for (final t in list) {
+          if (t.id == task.id) return t.isCompleted;
+        }
+        return true; // task no longer exists → nothing to complete
+      }),
+    );
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+          child: Text(
+            'کمی استراحت کن ☕ چند دقیقه چشم‌ت رو از صفحه بردار.',
+            textAlign: TextAlign.center,
+            style: TextStyle(color: CupertinoColors.systemGrey, fontSize: 14),
+          ),
+        ),
+        const SizedBox(height: AppSpacing.xl),
+        if (!isTaskDone)
+          _CompletionButton(
+            label: 'کار انجام شد ✓',
+            filled: true,
+            onTap: () {
+              ref.read(tasksProvider.notifier).toggleComplete(task.id);
+              Navigator.pop(context);
+            },
+          ),
+        if (!isTaskDone) const SizedBox(height: AppSpacing.md),
+        _CompletionButton(
+          label: 'بازگشت',
+          filled: false,
+          onTap: () => Navigator.pop(context),
+        ),
+      ],
+    );
+  }
+}
+
+class _CompletionButton extends StatelessWidget {
+  const _CompletionButton({
+    required this.label,
+    required this.filled,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool filled;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Semantics(
       button: true,
-      label: 'بازگشت',
+      label: label,
       excludeSemantics: true,
-      child: GestureDetector(
-        onTap: onTap,
-        child: LiquidGlass(
-          borderRadius: BorderRadius.circular(30),
-          onDark: true,
-          padding: const EdgeInsets.symmetric(
-            horizontal: 40,
-            vertical: AppSpacing.lg,
-          ),
-          child: const Text(
-            'بازگشت',
-            style: TextStyle(
-              color: CupertinoColors.white,
-              fontWeight: FontWeight.w700,
-            ),
+      child: CupertinoButton(
+        color: filled
+            ? AppColors.accentGreen
+            : CupertinoColors.white.withValues(alpha: 0.14),
+        borderRadius: BorderRadius.circular(30),
+        padding: const EdgeInsets.symmetric(
+          horizontal: 40,
+          vertical: AppSpacing.md,
+        ),
+        onPressed: onTap,
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: CupertinoColors.white,
+            fontWeight: FontWeight.w700,
           ),
         ),
       ),

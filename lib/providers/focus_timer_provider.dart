@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../data/models/task.dart';
+import 'stats_provider.dart';
 import 'task_providers.dart';
 
 /// A focus session's state is always derived from wall-clock time
@@ -127,6 +128,9 @@ class FocusTimerNotifier extends Notifier<FocusSessionState?> {
     final s = state;
     if (s == null || s.completed) return;
     state = s.copyWith(remainingAtSync: 0, runningSince: null, completed: true);
+    // Record the session for streak/goal momentum before the celebratory
+    // haptic, so the completion screen already reflects the new count.
+    await ref.read(statsProvider.notifier).recordCompletedSession();
     await ref.read(hapticsServiceProvider).timerComplete();
     await ref.read(notificationServiceProvider).cancel(
           _focusNotificationIdOffset + s.task.id,
