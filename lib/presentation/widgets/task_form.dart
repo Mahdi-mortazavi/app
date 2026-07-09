@@ -1,0 +1,332 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_typography.dart';
+import '../../data/models/sub_task.dart';
+import '../../data/models/task.dart';
+import '../../providers/task_providers.dart';
+import 'glass_badge.dart';
+import 'permission_primer.dart';
+
+const _categories = ['شخصی', 'کاری', 'خرید', 'مطالعه'];
+const _durations = [25, 45, 90];
+
+class TaskForm extends ConsumerStatefulWidget {
+  const TaskForm({super.key, this.task});
+
+  final Task? task;
+
+  @override
+  ConsumerState<TaskForm> createState() => _TaskFormState();
+}
+
+class _TaskFormState extends ConsumerState<TaskForm> {
+  late final TextEditingController _titleController;
+  String _category = _categories.first;
+  int _duration = _durations.first;
+  bool _pinned = false;
+  DateTime? _reminder;
+  List<SubTask> _subtasks = [];
+
+  @override
+  void initState() {
+    super.initState();
+    final t = widget.task;
+    _titleController = TextEditingController(text: t?.title ?? '');
+    if (t != null) {
+      _category = t.category;
+      _duration = t.duration;
+      _pinned = t.isPinned;
+      _reminder = t.reminder;
+      _subtasks = t.subtasks.map((s) => s.copyWith()).toList();
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ClipRRect(
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
+      child: ColoredBox(
+        color: CupertinoColors.white.withOpacity(0.92),
+        child: SafeArea(
+          top: false,
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              24,
+              24,
+              24,
+              MediaQuery.of(context).viewInsets.bottom + 24,
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: AppColors.inkSubdued.withOpacity(0.3),
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      widget.task == null ? 'کار جدید' : 'ویرایش',
+                      style: AppTypography.title,
+                    ),
+                    if (widget.task != null)
+                      CupertinoButton(
+                        padding: EdgeInsets.zero,
+                        minSize: 0,
+                        onPressed: _delete,
+                        child: const Icon(
+                          CupertinoIcons.trash,
+                          color: AppColors.accentRed,
+                        ),
+                      ),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                CupertinoTextField(
+                  controller: _titleController,
+                  placeholder: 'عنوان کار...',
+                  padding: const EdgeInsets.symmetric(vertical: 16),
+                  decoration: BoxDecoration(
+                    border: Border(
+                      bottom: BorderSide(
+                        color: AppColors.inkSubdued.withOpacity(0.15),
+                      ),
+                    ),
+                  ),
+                  style: AppTypography.body,
+                ),
+                const SizedBox(height: 16),
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  child: Row(
+                    children: [
+                      GlassBadge(
+                        _category,
+                        onTap: () => setState(() {
+                          final i = _categories.indexOf(_category);
+                          _category = _categories[(i + 1) % _categories.length];
+                        }),
+                      ),
+                      const SizedBox(width: 8),
+                      GlassBadge(
+                        '$_duration دقیقه',
+                        icon: CupertinoIcons.timer,
+                        onTap: () => setState(() {
+                          final i = _durations.indexOf(_duration);
+                          _duration = _durations[(i + 1) % _durations.length];
+                        }),
+                      ),
+                      const SizedBox(width: 8),
+                      GlassBadge(
+                        _pinned ? 'پین شده' : 'پین',
+                        icon: _pinned ? CupertinoIcons.pin_fill : CupertinoIcons.pin,
+                        active: _pinned,
+                        onTap: () => setState(() => _pinned = !_pinned),
+                      ),
+                      const SizedBox(width: 8),
+                      GlassBadge(
+                        _reminder != null
+                            ? '${_reminder!.hour}:${_reminder!.minute.toString().padLeft(2, '0')}'
+                            : 'یادآور',
+                        icon: CupertinoIcons.alarm,
+                        active: _reminder != null,
+                        onTap: _pickReminderTime,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'زیرمجموعه (${_subtasks.where((e) => e.isCompleted).length}/${_subtasks.length})',
+                      style: AppTypography.caption,
+                    ),
+                    CupertinoButton(
+                      padding: EdgeInsets.zero,
+                      minSize: 0,
+                      onPressed: _addSubtask,
+                      child: const Icon(
+                        CupertinoIcons.add_circled,
+                        color: AppColors.accentBlue,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 8),
+                for (final s in _subtasks)
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: AppColors.canvasTop.withOpacity(0.6),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Row(
+                      children: [
+                        GestureDetector(
+                          onTap: () => setState(() {
+                            _subtasks = [
+                              for (final x in _subtasks)
+                                if (x.id == s.id)
+                                  x.copyWith(isCompleted: !x.isCompleted)
+                                else
+                                  x,
+                            ];
+                          }),
+                          child: Icon(
+                            s.isCompleted
+                                ? CupertinoIcons.check_mark_circled_solid
+                                : CupertinoIcons.circle,
+                            color: s.isCompleted
+                                ? AppColors.accentGreen
+                                : AppColors.inkSubdued,
+                            size: 20,
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            s.title,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              decoration:
+                                  s.isCompleted ? TextDecoration.lineThrough : null,
+                            ),
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () => setState(
+                            () => _subtasks = _subtasks.where((x) => x.id != s.id).toList(),
+                          ),
+                          child: const Icon(
+                            CupertinoIcons.minus_circle,
+                            color: AppColors.accentRed,
+                            size: 20,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                const SizedBox(height: 24),
+                CupertinoButton(
+                  color: AppColors.ink,
+                  borderRadius: BorderRadius.circular(16),
+                  onPressed: _save,
+                  child: const Text(
+                    'ذخیره',
+                    style: TextStyle(
+                      fontWeight: FontWeight.w700,
+                      color: CupertinoColors.white,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _addSubtask() {
+    String value = '';
+    showCupertinoDialog<void>(
+      context: context,
+      builder: (dialogContext) => CupertinoAlertDialog(
+        title: const Text('افزودن مورد'),
+        content: Padding(
+          padding: const EdgeInsets.only(top: 10),
+          child: CupertinoTextField(autofocus: true, onChanged: (v) => value = v),
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('لغو'),
+          ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () {
+              if (value.isNotEmpty) {
+                setState(() => _subtasks = [..._subtasks, SubTask(title: value)]);
+              }
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('افزودن'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _pickReminderTime() async {
+    final granted = await ensureNotificationPermission(context, ref);
+    if (!granted || !mounted) return;
+
+    await showCupertinoModalPopup<void>(
+      context: context,
+      builder: (popupContext) => Container(
+        height: 250,
+        color: CupertinoColors.systemBackground.resolveFrom(popupContext),
+        child: CupertinoDatePicker(
+          mode: CupertinoDatePickerMode.time,
+          use24hFormat: true,
+          onDateTimeChanged: (t) {
+            final now = DateTime.now();
+            setState(
+              () => _reminder = DateTime(now.year, now.month, now.day, t.hour, t.minute),
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  void _delete() {
+    final task = widget.task;
+    if (task == null) return;
+    ref.read(tasksProvider.notifier).delete(task.id);
+    Navigator.pop(context);
+  }
+
+  void _save() {
+    if (_titleController.text.trim().isEmpty) return;
+
+    final task = Task(
+      id: widget.task?.id ?? DateTime.now().millisecondsSinceEpoch,
+      title: _titleController.text.trim(),
+      category: _category,
+      duration: _duration,
+      reminder: _reminder,
+      isPinned: _pinned,
+      isCompleted: widget.task?.isCompleted ?? false,
+      subtasks: _subtasks,
+    );
+
+    final notifier = ref.read(tasksProvider.notifier);
+    if (widget.task == null) {
+      notifier.addTask(task);
+    } else {
+      notifier.updateTask(task);
+    }
+    Navigator.pop(context);
+  }
+}
