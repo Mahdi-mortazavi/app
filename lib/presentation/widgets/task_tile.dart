@@ -159,7 +159,7 @@ class _Checkbox extends StatelessWidget {
                 border: Border.all(
                   color: isDone
                       ? AppColors.accentGreen
-                      : CupertinoColors.white.withOpacity(0.7),
+                      : CupertinoColors.white.withValues(alpha: 0.7),
                   width: 2,
                 ),
               ),

@@ -32,12 +32,12 @@ class GlassBadge extends ConsumerWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          color: active ? AppColors.ink : CupertinoColors.white.withOpacity(0.5),
+          color: active ? AppColors.ink : CupertinoColors.white.withValues(alpha: 0.5),
           borderRadius: BorderRadius.circular(20),
           border: Border.all(
             color: active
                 ? CupertinoColors.transparent
-                : CupertinoColors.white.withOpacity(0.6),
+                : CupertinoColors.white.withValues(alpha: 0.6),
             width: 0.6,
           ),
         ),

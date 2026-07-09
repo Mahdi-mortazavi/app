@@ -50,7 +50,7 @@ class PinnedCard extends ConsumerWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: CupertinoColors.white.withOpacity(0.7),
+                              color: CupertinoColors.white.withValues(alpha: 0.7),
                               width: 2,
                             ),
                           ),

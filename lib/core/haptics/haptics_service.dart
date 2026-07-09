@@ -19,7 +19,7 @@ class HapticsService {
 
   Future<bool> get _canVibrate async {
     if (kIsWeb) return false;
-    return _hasVibrator ??= await Vibration.hasVibrator() ?? false;
+    return _hasVibrator ??= await Vibration.hasVibrator();
   }
 
   /// Micro click for selection/toggle changes (category chips, tab swaps).

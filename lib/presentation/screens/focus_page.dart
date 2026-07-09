@@ -198,10 +198,10 @@ class _PulsingGlowState extends State<_PulsingGlow>
           height: 300,
           decoration: BoxDecoration(
             shape: BoxShape.circle,
-            color: widget.color.withOpacity(0.15),
+            color: widget.color.withValues(alpha: 0.15),
             boxShadow: [
               BoxShadow(
-                color: widget.color.withOpacity(0.3),
+                color: widget.color.withValues(alpha: 0.3),
                 blurRadius: 120,
                 spreadRadius: 20,
               ),
@@ -240,7 +240,7 @@ class _TimerReadout extends ConsumerWidget {
             radius: 140,
             lineWidth: 6,
             percent: progress.clamp(0.0, 1.0),
-            backgroundColor: CupertinoColors.white.withOpacity(0.08),
+            backgroundColor: CupertinoColors.white.withValues(alpha: 0.08),
             progressColor: remaining < 60 ? AppColors.accentRed : accent,
             circularStrokeCap: CircularStrokeCap.round,
             animateFromLastPercent: true,
@@ -289,10 +289,10 @@ class _Controls extends ConsumerWidget {
                   width: 80,
                   height: 80,
                   decoration: BoxDecoration(
-                    color: CupertinoColors.white.withOpacity(0.16),
+                    color: CupertinoColors.white.withValues(alpha: 0.16),
                     shape: BoxShape.circle,
                     border:
-                        Border.all(color: CupertinoColors.white.withOpacity(0.25)),
+                        Border.all(color: CupertinoColors.white.withValues(alpha: 0.25)),
                   ),
                   child: Icon(
                     isRunning
