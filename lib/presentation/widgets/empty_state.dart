@@ -18,28 +18,34 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final content = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 48),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 44, color: AppColors.inkSubdued.withOpacity(0.5)),
-          const SizedBox(height: 16),
-          Text(
-            title,
-            textAlign: TextAlign.center,
-            style: AppTypography.title.copyWith(color: AppColors.inkSubdued),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            message,
-            textAlign: TextAlign.center,
-            maxLines: 3,
-            overflow: TextOverflow.ellipsis,
-            style: AppTypography.caption,
-          ),
-        ],
+      child: Semantics(
+        container: true,
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 44, color: AppColors.inkSubdued.withOpacity(0.5)),
+            const SizedBox(height: 16),
+            Text(
+              title,
+              textAlign: TextAlign.center,
+              style: AppTypography.title.copyWith(color: AppColors.inkSubdued),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              message,
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.caption,
+            ),
+          ],
+        ),
       ),
-    ).animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0);
+    );
+
+    if (MediaQuery.of(context).disableAnimations) return content;
+    return content.animate().fadeIn(duration: 400.ms).slideY(begin: 0.05, end: 0);
   }
 }

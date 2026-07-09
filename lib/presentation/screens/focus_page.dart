@@ -6,8 +6,10 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:percent_indicator/circular_percent_indicator.dart';
 
 import '../../core/theme/app_colors.dart';
+import '../../core/theme/app_spacing.dart';
 import '../../core/theme/app_typography.dart';
 import '../../core/theme/liquid_glass.dart';
+import '../../core/utils/formatting.dart';
 import '../../data/models/task.dart';
 import '../../providers/focus_timer_provider.dart';
 import '../../providers/task_providers.dart';
@@ -56,111 +58,198 @@ class _FocusPageState extends ConsumerState<FocusPage> with WidgetsBindingObserv
 
   @override
   Widget build(BuildContext context) {
-    final session = ref.watch(focusTimerProvider);
-    if (session == null) return const SizedBox.shrink();
-
-    final remaining = session.remainingSeconds;
-    final minutes = (remaining ~/ 60).toString().padLeft(2, '0');
-    final seconds = (remaining % 60).toString().padLeft(2, '0');
+    // Watch only the two booleans that change page structure — NOT the whole
+    // session — so the per-second timer tick rebuilds just the readout subtree
+    // below, not this entire tree + the glow + the controls.
+    final completed =
+        ref.watch(focusTimerProvider.select((s) => s?.completed ?? false));
+    final isRunning =
+        ref.watch(focusTimerProvider.select((s) => s?.isRunning ?? false));
+    final reduceMotion = MediaQuery.of(context).disableAnimations;
 
     return CupertinoPageScaffold(
       backgroundColor: AppColors.focusCanvas,
       child: Stack(
         alignment: Alignment.center,
         children: [
-            Container(
-              width: 300,
-              height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: _glowColor.withOpacity(0.15),
-                boxShadow: [
-                  BoxShadow(
-                    color: _glowColor.withOpacity(0.3),
-                    blurRadius: 120,
-                    spreadRadius: 20,
+          _PulsingGlow(
+            color: _glowColor,
+            // The glow only breathes while actively counting down. Paused or
+            // finished it holds still — no wasted 60fps repaints, and it
+            // respects the system Reduce Motion setting.
+            active: isRunning && !completed && !reduceMotion,
+          ),
+          SafeArea(
+            child: Column(
+              children: [
+                Align(
+                  alignment: AlignmentDirectional.topStart,
+                  child: CupertinoButton(
+                    onPressed: () => Navigator.pop(context),
+                    child: const Icon(
+                      CupertinoIcons.xmark,
+                      color: CupertinoColors.white,
+                      semanticLabel: 'بستن جلسه تمرکز',
+                    ),
                   ),
-                ],
-              ),
-            ).animate(onPlay: (c) => c.repeat(reverse: true)).scale(
-                  duration: 4.seconds,
-                  begin: const Offset(0.8, 0.8),
-                  end: const Offset(1.3, 1.3),
                 ),
-            SafeArea(
-              child: Column(
-                children: [
-                  Align(
-                    alignment: AlignmentDirectional.topStart,
-                    child: CupertinoButton(
-                      onPressed: () => Navigator.pop(context),
-                      child: const Icon(
-                        CupertinoIcons.xmark,
-                        color: CupertinoColors.white,
-                      ),
-                    ),
+                const Spacer(),
+                Hero(
+                  tag: 'play_${widget.task.id}',
+                  child: const SizedBox.shrink(),
+                ),
+                Text(
+                  widget.task.category,
+                  style: TextStyle(
+                    color: _glowColor,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 1,
                   ),
-                  const Spacer(),
-                  Hero(
-                    tag: 'play_${widget.task.id}',
-                    child: const SizedBox.shrink(),
-                  ),
-                  Text(
-                    widget.task.category,
-                    style: TextStyle(
-                      color: _glowColor,
+                ),
+                const SizedBox(height: 10),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xxl),
+                  child: Text(
+                    widget.task.title,
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      color: CupertinoColors.white,
+                      fontSize: 26,
                       fontWeight: FontWeight.w700,
-                      letterSpacing: 1,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 32),
-                    child: Text(
-                      widget.task.title,
-                      textAlign: TextAlign.center,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: CupertinoColors.white,
-                        fontSize: 26,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: 48),
-                  if (session.completed)
-                    _CompletionBadge(color: _glowColor)
-                  else
-                    Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        CircularPercentIndicator(
-                          radius: 140,
-                          lineWidth: 6,
-                          percent: session.progress,
-                          backgroundColor: CupertinoColors.white.withOpacity(0.08),
-                          progressColor:
-                              remaining < 60 ? AppColors.accentRed : _glowColor,
-                          circularStrokeCap: CircularStrokeCap.round,
-                          animateFromLastPercent: true,
-                          animation: true,
-                          animationDuration: 900,
-                        ),
-                        Text('$minutes:$seconds', style: AppTypography.timer),
-                      ],
-                    ),
-                  const SizedBox(height: 48),
-                  if (session.completed)
-                    _DoneButton(onTap: () => Navigator.pop(context))
-                  else
-                    const _Controls(),
-                  const Spacer(flex: 2),
-                ],
-              ),
+                ),
+                const SizedBox(height: 48),
+                if (completed)
+                  _CompletionBadge(color: _glowColor, reduceMotion: reduceMotion)
+                else
+                  _TimerReadout(accent: _glowColor, reduceMotion: reduceMotion),
+                const SizedBox(height: 48),
+                if (completed)
+                  _DoneButton(onTap: () => Navigator.pop(context))
+                else
+                  const _Controls(),
+                const Spacer(flex: 2),
+              ],
             ),
-          ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// Self-contained breathing glow. Owns its own controller so it is not
+/// rebuilt by the per-second timer tick, and starts/stops with [active].
+class _PulsingGlow extends StatefulWidget {
+  const _PulsingGlow({required this.color, required this.active});
+
+  final Color color;
+  final bool active;
+
+  @override
+  State<_PulsingGlow> createState() => _PulsingGlowState();
+}
+
+class _PulsingGlowState extends State<_PulsingGlow>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(seconds: 4),
+  );
+
+  @override
+  void initState() {
+    super.initState();
+    _sync();
+  }
+
+  @override
+  void didUpdateWidget(_PulsingGlow oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.active != oldWidget.active) _sync();
+  }
+
+  void _sync() {
+    if (widget.active) {
+      _controller.repeat(reverse: true);
+    } else {
+      _controller.stop();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return IgnorePointer(
+      child: ScaleTransition(
+        scale: Tween<double>(begin: 0.85, end: 1.25).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeInOut),
         ),
+        child: Container(
+          width: 300,
+          height: 300,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: widget.color.withOpacity(0.15),
+            boxShadow: [
+              BoxShadow(
+                color: widget.color.withOpacity(0.3),
+                blurRadius: 120,
+                spreadRadius: 20,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+/// The only part of the screen that rebuilds every second.
+class _TimerReadout extends ConsumerWidget {
+  const _TimerReadout({required this.accent, required this.reduceMotion});
+
+  final Color accent;
+  final bool reduceMotion;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final remaining =
+        ref.watch(focusTimerProvider.select((s) => s?.remainingSeconds ?? 0));
+    final progress =
+        ref.watch(focusTimerProvider.select((s) => s?.progress ?? 0.0));
+
+    final minutes = remaining ~/ 60;
+    final seconds = remaining % 60;
+
+    return Semantics(
+      label: 'زمان باقی‌مانده: $minutes دقیقه و $seconds ثانیه',
+      excludeSemantics: true,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          CircularPercentIndicator(
+            radius: 140,
+            lineWidth: 6,
+            percent: progress.clamp(0.0, 1.0),
+            backgroundColor: CupertinoColors.white.withOpacity(0.08),
+            progressColor: remaining < 60 ? AppColors.accentRed : accent,
+            circularStrokeCap: CircularStrokeCap.round,
+            animateFromLastPercent: true,
+            animation: !reduceMotion,
+            animationDuration: 900,
+          ),
+          Text(Fmt.clock(remaining), style: AppTypography.timer),
+        ],
+      ),
     );
   }
 }
@@ -170,71 +259,98 @@ class _Controls extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final session = ref.watch(focusTimerProvider);
-    if (session == null) return const SizedBox.shrink();
+    final isRunning =
+        ref.watch(focusTimerProvider.select((s) => s?.isRunning ?? false));
     final notifier = ref.read(focusTimerProvider.notifier);
     final haptics = ref.read(hapticsServiceProvider);
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _GlassStepButton(label: '-5', onTap: () => notifier.adjust(-300)),
-        const SizedBox(width: 32),
-        GestureDetector(
-          onTap: () {
-            haptics.light();
-            session.isRunning ? notifier.pause() : notifier.resume();
-          },
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(40),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
-              child: Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  color: CupertinoColors.white.withOpacity(0.16),
-                  shape: BoxShape.circle,
-                  border: Border.all(color: CupertinoColors.white.withOpacity(0.25)),
-                ),
-                child: Icon(
-                  session.isRunning
-                      ? CupertinoIcons.pause_fill
-                      : CupertinoIcons.play_fill,
-                  color: CupertinoColors.white,
-                  size: 32,
+        _GlassStepButton(
+          label: '−۵',
+          semanticLabel: 'کاهش پنج دقیقه',
+          onTap: () => notifier.adjust(-300),
+        ),
+        const SizedBox(width: AppSpacing.xxl),
+        Semantics(
+          button: true,
+          label: isRunning ? 'توقف موقت' : 'ادامه',
+          child: GestureDetector(
+            onTap: () {
+              haptics.light();
+              isRunning ? notifier.pause() : notifier.resume();
+            },
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(AppSpacing.minTouchTarget),
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
+                child: Container(
+                  width: 80,
+                  height: 80,
+                  decoration: BoxDecoration(
+                    color: CupertinoColors.white.withOpacity(0.16),
+                    shape: BoxShape.circle,
+                    border:
+                        Border.all(color: CupertinoColors.white.withOpacity(0.25)),
+                  ),
+                  child: Icon(
+                    isRunning
+                        ? CupertinoIcons.pause_fill
+                        : CupertinoIcons.play_fill,
+                    color: CupertinoColors.white,
+                    size: 32,
+                  ),
                 ),
               ),
             ),
           ),
         ),
-        const SizedBox(width: 32),
-        _GlassStepButton(label: '+5', onTap: () => notifier.adjust(300)),
+        const SizedBox(width: AppSpacing.xxl),
+        _GlassStepButton(
+          label: '+۵',
+          semanticLabel: 'افزودن پنج دقیقه',
+          onTap: () => notifier.adjust(300),
+        ),
       ],
     );
   }
 }
 
 class _GlassStepButton extends StatelessWidget {
-  const _GlassStepButton({required this.label, required this.onTap});
+  const _GlassStepButton({
+    required this.label,
+    required this.semanticLabel,
+    required this.onTap,
+  });
 
   final String label;
+  final String semanticLabel;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: LiquidGlass(
-        borderRadius: BorderRadius.circular(30),
-        blurSigma: 12,
-        onDark: true,
-        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-        child: Text(
-          label,
-          style: const TextStyle(
-            color: CupertinoColors.white,
-            fontWeight: FontWeight.w700,
+    return Semantics(
+      button: true,
+      label: semanticLabel,
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: LiquidGlass(
+          borderRadius: BorderRadius.circular(30),
+          blurSigma: 12,
+          onDark: true,
+          padding: const EdgeInsets.symmetric(
+            horizontal: AppSpacing.xl,
+            vertical: AppSpacing.md,
+          ),
+          child: Text(
+            label,
+            style: const TextStyle(
+              color: CupertinoColors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 16,
+            ),
           ),
         ),
       ),
@@ -243,27 +359,36 @@ class _GlassStepButton extends StatelessWidget {
 }
 
 class _CompletionBadge extends StatelessWidget {
-  const _CompletionBadge({required this.color});
+  const _CompletionBadge({required this.color, required this.reduceMotion});
 
   final Color color;
+  final bool reduceMotion;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Icon(CupertinoIcons.check_mark_circled_solid, color: color, size: 96)
-            .animate()
-            .scale(duration: 500.ms, curve: Curves.easeOutBack),
-        const SizedBox(height: 16),
-        const Text(
-          'تمام شد!',
-          style: TextStyle(
-            color: CupertinoColors.white,
-            fontSize: 22,
-            fontWeight: FontWeight.w700,
+    final icon = Icon(
+      CupertinoIcons.check_mark_circled_solid,
+      color: color,
+      size: 96,
+    );
+    return Semantics(
+      label: 'جلسه تمرکز کامل شد',
+      child: Column(
+        children: [
+          reduceMotion
+              ? icon
+              : icon.animate().scale(duration: 500.ms, curve: Curves.easeOutBack),
+          const SizedBox(height: AppSpacing.lg),
+          const Text(
+            'تمام شد!',
+            style: TextStyle(
+              color: CupertinoColors.white,
+              fontSize: 22,
+              fontWeight: FontWeight.w700,
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 }
@@ -275,15 +400,26 @@ class _DoneButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: LiquidGlass(
-        borderRadius: BorderRadius.circular(30),
-        onDark: true,
-        padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 16),
-        child: const Text(
-          'بازگشت',
-          style: TextStyle(color: CupertinoColors.white, fontWeight: FontWeight.w700),
+    return Semantics(
+      button: true,
+      label: 'بازگشت',
+      excludeSemantics: true,
+      child: GestureDetector(
+        onTap: onTap,
+        child: LiquidGlass(
+          borderRadius: BorderRadius.circular(30),
+          onDark: true,
+          padding: const EdgeInsets.symmetric(
+            horizontal: 40,
+            vertical: AppSpacing.lg,
+          ),
+          child: const Text(
+            'بازگشت',
+            style: TextStyle(
+              color: CupertinoColors.white,
+              fontWeight: FontWeight.w700,
+            ),
+          ),
         ),
       ),
     );

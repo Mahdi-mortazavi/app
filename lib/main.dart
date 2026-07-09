@@ -18,8 +18,14 @@ Future<void> main() async {
 
   // Notifications need timezone data loaded before any reminder can be
   // scheduled, so this awaits before the first frame rather than racing it.
+  // A failure here (e.g. a plugin/platform hiccup) must never block launch —
+  // the app is fully usable without notifications, so we degrade gracefully.
   final container = ProviderContainer();
-  await container.read(notificationServiceProvider).init();
+  try {
+    await container.read(notificationServiceProvider).init();
+  } catch (e, stack) {
+    debugPrint('Notification init failed, continuing without it: $e\n$stack');
+  }
 
   runApp(
     UncontrolledProviderScope(
@@ -38,10 +44,23 @@ class NavaApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Nava',
       theme: AppTheme.light,
-      builder: (context, child) => Directionality(
-        textDirection: TextDirection.rtl,
-        child: child!,
-      ),
+      builder: (context, child) {
+        // Honor the system Dynamic Type setting, but clamp the upper bound so
+        // the largest accessibility sizes scale text without shattering the
+        // glass layouts (which have fixed-height rows and pinned cards).
+        final mq = MediaQuery.of(context);
+        final clamped = mq.textScaler.clamp(
+          minScaleFactor: 0.9,
+          maxScaleFactor: 1.35,
+        );
+        return MediaQuery(
+          data: mq.copyWith(textScaler: clamped),
+          child: Directionality(
+            textDirection: TextDirection.rtl,
+            child: child!,
+          ),
+        );
+      },
       home: const HomeScreen(),
     );
   }
