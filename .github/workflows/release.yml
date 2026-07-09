@@ -26,12 +26,22 @@ jobs:
 
       - name: Resolve version
         id: version
+        env:
+          RAW_VERSION: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.version || github.ref_name }}
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            echo "version=${{ github.event.inputs.version }}" >> "$GITHUB_OUTPUT"
-          else
-            echo "version=${{ github.ref_name }}" >> "$GITHUB_OUTPUT"
+          # Sanitize: trim surrounding whitespace and any stray trailing dot,
+          # then require a clean vX.Y.Z shape. Prevents malformed release
+          # titles / asset names like "Nava-v1.1.0 -..." from a fat-fingered
+          # input, and reads the value via env (not string interpolation) so a
+          # crafted input can't inject shell.
+          version="$(printf '%s' "$RAW_VERSION" | tr -d '[:space:]')"
+          version="${version%.}"
+          if ! printf '%s' "$version" | grep -Eq '^v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.]+)?$'; then
+            echo "::error::Invalid version '$RAW_VERSION'. Expected vMAJOR.MINOR.PATCH (e.g. v1.2.0)."
+            exit 1
           fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Resolved version: $version"
 
       - uses: actions/setup-java@v4
         with:
