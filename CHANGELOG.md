@@ -4,6 +4,19 @@ All notable changes are recorded here. From v2.0.0 onward this file is
 maintained automatically by [release-please](https://github.com/googleapis/release-please)
 from Conventional Commit messages — see [`docs/RELEASING.md`](docs/RELEASING.md).
 
+## [2.0.1] - 2026-07-09
+
+### 🐛 Bug Fixes
+- **Notifications (Android):** task/focus notification IDs were derived from a
+  millisecond-epoch value (~1.7e12) that overflows Android's 32-bit
+  notification-ID limit, so reminders and focus-completion alerts could fail to
+  post or become impossible to cancel. IDs are now mapped into the valid 32-bit
+  range consistently across schedule/show/cancel.
+
+### ✅ Tests
+- Added regression tests for the notification-ID mapping and a widget test that
+  renders the home screen with a task (covering the v2 Momentum card).
+
 ## [2.0.0] - 2026-07-09
 
 ### ✨ Features — "Momentum" (behavioral-science engagement layer)

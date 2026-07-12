@@ -14,6 +14,13 @@ class NotificationService {
   final fln.FlutterLocalNotificationsPlugin _plugin;
   bool _initialized = false;
 
+  /// Android notification IDs are 32-bit signed ints. Task IDs are
+  /// millisecond epoch timestamps (~1.7e12) which overflow that range and
+  /// break scheduling/cancellation on Android. Every public method funnels
+  /// its id through here so a task always maps to the SAME 32-bit id for
+  /// schedule, show, and cancel — keeping them consistent.
+  static int safeId(int sourceId) => sourceId.remainder(2147483647).abs();
+
   static const _channel = fln.AndroidNotificationDetails(
     'focus_channel',
     'Focus Tasks',
@@ -118,7 +125,7 @@ class NotificationService {
 
     try {
       await _plugin.zonedSchedule(
-        id,
+        safeId(id),
         title,
         body,
         scheduled,
@@ -131,7 +138,7 @@ class NotificationService {
       debugPrint('Exact scheduling failed ($e), falling back to inexact.');
       try {
         await _plugin.zonedSchedule(
-          id,
+          safeId(id),
           title,
           body,
           scheduled,
@@ -156,7 +163,7 @@ class NotificationService {
   }) async {
     if (kIsWeb || !_initialized) return;
     await _plugin.show(
-      id,
+      safeId(id),
       title,
       body,
       const fln.NotificationDetails(
@@ -168,6 +175,6 @@ class NotificationService {
 
   Future<void> cancel(int id) async {
     if (kIsWeb || !_initialized) return;
-    await _plugin.cancel(id);
+    await _plugin.cancel(safeId(id));
   }
 }
