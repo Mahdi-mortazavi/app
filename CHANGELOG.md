@@ -4,6 +4,13 @@ All notable changes are recorded here. From v2.0.0 onward this file is
 maintained automatically by [release-please](https://github.com/googleapis/release-please)
 from Conventional Commit messages — see [`docs/RELEASING.md`](docs/RELEASING.md).
 
+## [2.0.1](https://github.com/Mahdi-mortazavi/app/compare/v2.0.0...v2.0.1) (2026-07-12)
+
+
+### 🐛 Bug Fixes
+
+* notification IDs overflow Android's 32-bit limit (v2.0.1) ([#83](https://github.com/Mahdi-mortazavi/app/issues/83)) ([1b95c24](https://github.com/Mahdi-mortazavi/app/commit/1b95c2400ba119c02a07347a5167198f00e4ed9f))
+
 ## [2.0.1] - 2026-07-09
 
 ### 🐛 Bug Fixes
