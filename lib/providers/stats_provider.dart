@@ -51,14 +51,27 @@ class StatsNotifier extends AsyncNotifier<FocusStats> {
     }
 
     state = AsyncData(next);
-    await _repo.save(next);
+    await _saveCurrent();
   }
 
   Future<void> setDailyGoal(int goal) async {
     final current = state.valueOrNull ?? const FocusStats();
     final next = current.copyWith(dailyGoal: goal.clamp(1, 12));
     state = AsyncData(next);
-    await _repo.save(next);
+    await _saveCurrent();
+  }
+
+  /// Serialized persistence (same rationale as TasksNotifier): chained
+  /// writes that save the CURRENT state, so rapid successive updates can
+  /// never persist out of order.
+  Future<void> _saveQueue = Future.value();
+
+  Future<void> _saveCurrent() {
+    _saveQueue = _saveQueue.then((_) async {
+      final stats = state.valueOrNull;
+      if (stats != null) await _repo.save(stats);
+    });
+    return _saveQueue;
   }
 }
 

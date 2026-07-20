@@ -61,22 +61,22 @@ class TasksNotifier extends AsyncNotifier<List<Task>> {
 
   Future<void> addTask(Task task) async {
     final current = state.valueOrNull ?? [];
-    final next = [task, ...current];
-    state = AsyncData(next);
+    state = AsyncData([task, ...current]);
+    final persisted = _persistCurrent();
     await _schedule(task);
-    await _persist(next);
     await _haptics.success();
+    await persisted;
   }
 
   Future<void> updateTask(Task task) async {
     final current = state.valueOrNull ?? [];
-    final next = [
+    state = AsyncData([
       for (final t in current) if (t.id == task.id) task else t,
-    ];
-    state = AsyncData(next);
+    ]);
+    final persisted = _persistCurrent();
     await _schedule(task);
-    await _persist(next);
     await _haptics.success();
+    await persisted;
   }
 
   Future<void> toggleComplete(int id) async {
@@ -85,8 +85,8 @@ class TasksNotifier extends AsyncNotifier<List<Task>> {
     if (index == -1) return;
 
     final toggled = current[index].copyWith(isCompleted: !current[index].isCompleted);
-    final next = [...current]..[index] = toggled;
-    state = AsyncData(next);
+    state = AsyncData([...current]..[index] = toggled);
+    final persisted = _persistCurrent();
 
     if (toggled.isCompleted) {
       await _notifications.cancel(id);
@@ -95,21 +95,21 @@ class TasksNotifier extends AsyncNotifier<List<Task>> {
       await _schedule(toggled);
       await _haptics.light();
     }
-    await _persist(next);
+    await persisted;
   }
 
   Future<void> delete(int id) async {
     final current = state.valueOrNull ?? [];
-    final next = current.where((t) => t.id != id).toList();
-    state = AsyncData(next);
+    state = AsyncData(current.where((t) => t.id != id).toList());
+    final persisted = _persistCurrent();
     await _notifications.cancel(id);
-    await _persist(next);
     await _haptics.warning();
+    await persisted;
   }
 
   Future<void> toggleSubTask(int taskId, String subId) async {
     final current = state.valueOrNull ?? [];
-    final next = [
+    state = AsyncData([
       for (final t in current)
         if (t.id == taskId)
           t.copyWith(
@@ -123,10 +123,10 @@ class TasksNotifier extends AsyncNotifier<List<Task>> {
           )
         else
           t,
-    ];
-    state = AsyncData(next);
-    await _persist(next);
+    ]);
+    final persisted = _persistCurrent();
     await _haptics.selection();
+    await persisted;
   }
 
   /// Always cancels first: an edit that removes or moves a reminder must
@@ -144,7 +144,24 @@ class TasksNotifier extends AsyncNotifier<List<Task>> {
     );
   }
 
-  Future<void> _persist(List<Task> tasks) => _repo.saveTasks(tasks);
+  /// Serialized persistence. Mutations used to persist a captured snapshot
+  /// *after* variable-latency side effects (haptics, notification calls),
+  /// so two rapid mutations could write out of order and the slower, staler
+  /// snapshot would win — silently dropping the newer change on next launch.
+  ///
+  /// Writes are now (1) enqueued immediately after the state update and
+  /// (2) chained on a queue that saves the CURRENT state at write time, so
+  /// the last write always contains every change regardless of side-effect
+  /// timing.
+  Future<void> _persistQueue = Future.value();
+
+  Future<void> _persistCurrent() {
+    _persistQueue = _persistQueue.then((_) async {
+      final tasks = state.valueOrNull;
+      if (tasks != null) await _repo.saveTasks(tasks);
+    });
+    return _persistQueue;
+  }
 }
 
 final tasksProvider = AsyncNotifierProvider<TasksNotifier, List<Task>>(

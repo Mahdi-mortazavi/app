@@ -54,6 +54,12 @@ jobs:
           channel: stable
           cache: true
 
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: gradle
+
       - run: flutter pub get
 
       # Quality gate — never attach an artifact from code that doesn't pass.
@@ -63,21 +69,73 @@ jobs:
       - name: Test
         run: flutter test
 
-      - name: Build arm64-v8a release APK
-        run: flutter build apk --release --target-platform android-arm64 --split-per-abi
+      # Release signing: materialize key.properties only if secrets exist.
+      - name: Set up release keystore (if secrets configured)
+        id: keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > android/app/release.keystore
+            cat > android/key.properties <<EOF
+          storeFile=release.keystore
+          storePassword=$KEYSTORE_PASSWORD
+          keyAlias=$KEY_ALIAS
+          keyPassword=$KEY_PASSWORD
+          EOF
+            echo "signed=release" >> "$GITHUB_OUTPUT"
+          else
+            echo "signed=debug" >> "$GITHUB_OUTPUT"
+          fi
 
-      - name: Rename artifact
+      - name: Build split-per-abi APKs (arm64-v8a + armeabi-v7a)
+        run: flutter build apk --release --split-per-abi
+
+      - name: Build universal APK
+        run: flutter build apk --release
+
+      - name: Package artifacts + SHA256SUMS
         id: artifact
         env:
           TAG: ${{ needs.release-please.outputs.tag_name }}
         run: |
-          src="build/app/outputs/flutter-apk/app-arm64-v8a-release.apk"
-          dest="build/app/outputs/flutter-apk/Nava-${TAG}-android-arm64.apk"
-          mv "$src" "$dest"
-          echo "path=$dest" >> "$GITHUB_OUTPUT"
+          out="build/app/outputs/flutter-apk"
+          mkdir -p dist
+          cp "$out/app-arm64-v8a-release.apk"   "dist/Nava-${TAG}-arm64-v8a.apk"
+          cp "$out/app-armeabi-v7a-release.apk" "dist/Nava-${TAG}-armeabi-v7a.apk"
+          cp "$out/app-release.apk"             "dist/Nava-${TAG}-universal.apk"
+          (cd dist && sha256sum ./*.apk > SHA256SUMS.txt && cat SHA256SUMS.txt)
 
-      - name: Attach APK to the release
+      - name: Append download guide to release notes
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           TAG: ${{ needs.release-please.outputs.tag_name }}
-        run: gh release upload "$TAG" "${{ steps.artifact.outputs.path }}" --clobber
+          SIGNED: ${{ steps.keystore.outputs.signed }}
+        run: |
+          gh release view "$TAG" --json body -q .body > notes.md
+          cat >> notes.md <<EOF
+
+          ---
+          ### 📥 کدام فایل را دانلود کنم؟ / Which file should I download?
+          | فایل | مناسب برای |
+          |---|---|
+          | **Nava-${TAG}-arm64-v8a.apk** ✅ توصیه‌شده | اکثر گوشی‌های ۲۰۱۵ به بعد / most phones since ~2015 |
+          | Nava-${TAG}-armeabi-v7a.apk | گوشی‌های قدیمی / older 32-bit phones |
+          | Nava-${TAG}-universal.apk | مطمئن نیستید؟ این را بگیرید (حجم بیشتر) / not sure? take this (larger) |
+
+          ### 🔐 Verify
+          \`sha256sum -c SHA256SUMS.txt\`
+          EOF
+          if [ "$SIGNED" = "debug" ]; then
+            printf '\n> ⚠️ This build is **debug-signed** (no release keystore configured yet).\n' >> notes.md
+          fi
+          gh release edit "$TAG" --notes-file notes.md
+
+      - name: Attach artifacts to the release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ needs.release-please.outputs.tag_name }}
+        run: gh release upload "$TAG" dist/* --clobber
