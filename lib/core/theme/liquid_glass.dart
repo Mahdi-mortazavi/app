@@ -4,18 +4,21 @@ import 'package:flutter/cupertino.dart';
 
 import 'app_colors.dart';
 
-/// A single reusable "Liquid Glass" surface: a deep backdrop blur, a subtle
-/// multi-stop tint gradient (so the glass reads as curved rather than flat),
-/// and a sub-pixel translucent border catching the light along one edge.
+/// A single reusable "Liquid Glass" surface: continuous ("squircle") corners,
+/// a deep backdrop blur, a subtle tint gradient, a hairline border, and a
+/// specular highlight along the top edge that reads as caught light.
 ///
-/// Every card/sheet/button in the app should be built from this instead of
-/// a flat `Container`, so the whole UI reads as one consistent material.
+/// Every card/sheet/button in the app is built from this, so the whole UI
+/// reads as one consistent material. Each surface is wrapped in a
+/// [RepaintBoundary]: BackdropFilter is one of the most expensive raster
+/// operations, and the boundary keeps a scrolling list of glass tiles from
+/// re-rasterizing untouched neighbors.
 class LiquidGlass extends StatelessWidget {
   const LiquidGlass({
     super.key,
     required this.child,
     this.borderRadius = const BorderRadius.all(Radius.circular(28)),
-    this.blurSigma = 30,
+    this.blurSigma = 24,
     this.tint = AppColors.glassTint,
     this.tintOpacity = 0.55,
     this.padding,
@@ -35,44 +38,72 @@ class LiquidGlass extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor =
-        (onDark ? CupertinoColors.white : AppColors.glassBorder);
+    final borderColor = onDark ? CupertinoColors.white : AppColors.glassBorder;
+    // Continuous corners read far less round than a circular radius of the
+    // same value, so scale up to match the intended visual radius.
+    final shape = ContinuousRectangleBorder(
+      borderRadius: borderRadius * 2.2,
+      side: BorderSide(
+        color: borderColor.withValues(alpha: 0.35),
+        width: 0.6,
+      ),
+    );
 
-    return ClipRRect(
-      borderRadius: borderRadius,
-      child: BackdropFilter(
-        filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
-        child: Container(
-          padding: padding,
-          decoration: BoxDecoration(
-            borderRadius: borderRadius,
-            gradient: LinearGradient(
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-              colors: [
-                tint.withValues(alpha: onDark ? 0.14 : tintOpacity),
-                tint.withValues(alpha: onDark ? 0.05 : tintOpacity * 0.45),
+    return RepaintBoundary(
+      child: ClipPath(
+        clipper: ShapeBorderClipper(shape: shape),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: blurSigma, sigmaY: blurSigma),
+          child: DecoratedBox(
+            decoration: ShapeDecoration(
+              shape: shape,
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  tint.withValues(alpha: onDark ? 0.14 : tintOpacity),
+                  tint.withValues(alpha: onDark ? 0.05 : tintOpacity * 0.45),
+                ],
+              ),
+            ),
+            child: Stack(
+              children: [
+                // Specular highlight: a faint band of light along the top
+                // edge, like a real pane catching overhead light.
+                Positioned(
+                  top: 0,
+                  left: 16,
+                  right: 16,
+                  height: 1,
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          CupertinoColors.white.withValues(alpha: 0),
+                          CupertinoColors.white
+                              .withValues(alpha: onDark ? 0.35 : 0.8),
+                          CupertinoColors.white.withValues(alpha: 0),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: padding ?? EdgeInsets.zero,
+                  child: child,
+                ),
               ],
             ),
-            border: Border.all(color: borderColor.withValues(alpha: 0.35), width: 0.6),
-            boxShadow: [
-              BoxShadow(
-                color: CupertinoColors.black.withValues(alpha: onDark ? 0.35 : 0.06),
-                blurRadius: 24,
-                offset: const Offset(0, 10),
-              ),
-            ],
           ),
-          child: child,
         ),
       ),
     );
   }
 }
 
-/// A [LiquidGlass] surface that reacts to touch with an organic scale-down,
-/// standing in for every previously-flat `GestureDetector` + `Container`
-/// pairing in the app.
+/// A [LiquidGlass] surface that reacts to touch with an organic, springy
+/// scale-down, standing in for every previously-flat `GestureDetector` +
+/// `Container` pairing in the app.
 class LiquidGlassTap extends StatefulWidget {
   const LiquidGlassTap({
     super.key,
@@ -80,7 +111,7 @@ class LiquidGlassTap extends StatefulWidget {
     required this.onTap,
     this.onLongPress,
     this.borderRadius = const BorderRadius.all(Radius.circular(28)),
-    this.blurSigma = 30,
+    this.blurSigma = 24,
     this.tint = AppColors.glassTint,
     this.tintOpacity = 0.55,
     this.padding,
@@ -117,9 +148,10 @@ class _LiquidGlassTapState extends State<LiquidGlassTap> {
       onTapCancel: () => _setPressed(false),
       onTapUp: (_) => _setPressed(false),
       child: AnimatedScale(
-        scale: _pressed ? 0.96 : 1.0,
-        duration: const Duration(milliseconds: 160),
-        curve: Curves.easeOutCubic,
+        scale: _pressed ? 0.97 : 1.0,
+        duration: const Duration(milliseconds: 220),
+        // Overshooting release curve for a springy, physical feel.
+        curve: Curves.easeOutBack,
         child: LiquidGlass(
           borderRadius: widget.borderRadius,
           blurSigma: widget.blurSigma,
