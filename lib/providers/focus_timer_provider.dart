@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../core/notifications/notification_service.dart';
 import '../data/models/task.dart';
 import 'stats_provider.dart';
 import 'task_providers.dart';
@@ -150,6 +151,7 @@ class FocusTimerNotifier extends Notifier<FocusSessionState?> {
           title: 'زمان تمرکز به پایان رسید',
           body: s.task.title,
           time: fireAt,
+          channel: NavaChannel.focusSession,
         );
   }
 

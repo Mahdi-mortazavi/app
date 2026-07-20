@@ -1,8 +1,14 @@
+import 'dart:ui' show Color;
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart' as fln;
 import 'package:flutter_timezone/flutter_timezone.dart';
 import 'package:timezone/data/latest_all.dart' as tz_data;
 import 'package:timezone/timezone.dart' as tz;
+
+/// Which Android channel a notification belongs to, so users can control
+/// reminders and focus-session alerts independently in system settings.
+enum NavaChannel { reminders, focusSession }
 
 /// Wraps `flutter_local_notifications` + `timezone`. Owns initialization,
 /// permission requests, and exact-alarm scheduling with a graceful fallback
@@ -21,12 +27,28 @@ class NotificationService {
   /// schedule, show, and cancel — keeping them consistent.
   static int safeId(int sourceId) => sourceId.remainder(2147483647).abs();
 
-  static const _channel = fln.AndroidNotificationDetails(
-    'focus_channel',
-    'Focus Tasks',
-    channelDescription: 'Task reminders',
+  /// Brand accent used as the notification tint on Android.
+  static const _brandColor = Color(0xFF0A84FF);
+
+  /// Task reminders: time-critical, user-scheduled → high importance.
+  static const _remindersChannel = fln.AndroidNotificationDetails(
+    'reminders',
+    'یادآورها',
+    channelDescription: 'یادآوری کارهای زمان‌دار',
     importance: fln.Importance.max,
     priority: fln.Priority.high,
+    color: _brandColor,
+  );
+
+  /// Focus-session events: expected by the user moments after they happen →
+  /// default importance, separately mutable in system settings.
+  static const _focusChannel = fln.AndroidNotificationDetails(
+    'focus_session',
+    'جلسه تمرکز',
+    channelDescription: 'پایان جلسه‌های تمرکز',
+    importance: fln.Importance.defaultImportance,
+    priority: fln.Priority.defaultPriority,
+    color: _brandColor,
   );
 
   Future<void> init() async {
@@ -113,14 +135,17 @@ class NotificationService {
     required String title,
     required String body,
     required DateTime time,
+    NavaChannel channel = NavaChannel.reminders,
   }) async {
     if (kIsWeb || !_initialized) return;
     if (!time.isAfter(DateTime.now())) return;
 
     final scheduled = tz.TZDateTime.from(time, tz.local);
-    const details = fln.NotificationDetails(
-      android: _channel,
-      iOS: fln.DarwinNotificationDetails(),
+    final details = fln.NotificationDetails(
+      android: channel == NavaChannel.focusSession
+          ? _focusChannel
+          : _remindersChannel,
+      iOS: const fln.DarwinNotificationDetails(),
     );
 
     try {
@@ -160,15 +185,18 @@ class NotificationService {
     required int id,
     required String title,
     required String body,
+    NavaChannel channel = NavaChannel.reminders,
   }) async {
     if (kIsWeb || !_initialized) return;
     await _plugin.show(
       safeId(id),
       title,
       body,
-      const fln.NotificationDetails(
-        android: _channel,
-        iOS: fln.DarwinNotificationDetails(),
+      fln.NotificationDetails(
+        android: channel == NavaChannel.focusSession
+            ? _focusChannel
+            : _remindersChannel,
+        iOS: const fln.DarwinNotificationDetails(),
       ),
     );
   }
