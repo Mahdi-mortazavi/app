@@ -138,67 +138,85 @@ Future<void> _pumpApp(WidgetTester tester) async {
   await tester.pumpAndSettle();
 }
 
+/// Shadows are stubbed out by the test framework; screenshots need the real
+/// ones during pumping AND painting. The flag must be restored before the
+/// test body returns (the framework verifies painting debug variables at
+/// test end — a tearDown runs too late), hence the wrapper.
+Future<void> _withRealShadows(Future<void> Function() body) async {
+  debugDisableShadows = false;
+  try {
+    await body();
+  } finally {
+    debugDisableShadows = true;
+  }
+}
+
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
   GoogleFonts.config.allowRuntimeFetching = false;
 
   setUpAll(_loadFonts);
 
-  // The test framework stubs out shadows by default; screenshots need the
-  // real ones.
-  setUp(() => debugDisableShadows = false);
-  tearDown(() => debugDisableShadows = true);
-
   testWidgets('home — light', (tester) async {
-    _sizeAsPhone(tester);
-    await _pumpApp(tester);
-    await expectLater(
-      find.byType(NavaApp),
-      matchesGoldenFile('goldens/home-light.png'),
-    );
+    await _withRealShadows(() async {
+      _sizeAsPhone(tester);
+      await _pumpApp(tester);
+      await expectLater(
+        find.byType(NavaApp),
+        matchesGoldenFile('goldens/home-light.png'),
+      );
+    });
   });
 
   testWidgets('home — dark', (tester) async {
-    _sizeAsPhone(tester);
-    tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
-    addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
-    await _pumpApp(tester);
-    await expectLater(
-      find.byType(NavaApp),
-      matchesGoldenFile('goldens/home-dark.png'),
-    );
+    await _withRealShadows(() async {
+      _sizeAsPhone(tester);
+      tester.platformDispatcher.platformBrightnessTestValue = Brightness.dark;
+      addTearDown(tester.platformDispatcher.clearPlatformBrightnessTestValue);
+      await _pumpApp(tester);
+      await expectLater(
+        find.byType(NavaApp),
+        matchesGoldenFile('goldens/home-dark.png'),
+      );
+    });
   });
 
   testWidgets('task form sheet', (tester) async {
-    _sizeAsPhone(tester);
-    await _pumpApp(tester);
-    await tester.tap(find.byIcon(CupertinoIcons.add));
-    await tester.pumpAndSettle();
-    await expectLater(
-      find.byType(NavaApp),
-      matchesGoldenFile('goldens/task-form.png'),
-    );
+    await _withRealShadows(() async {
+      _sizeAsPhone(tester);
+      await _pumpApp(tester);
+      await tester.tap(find.byIcon(CupertinoIcons.add));
+      await tester.pumpAndSettle();
+      await expectLater(
+        find.byType(NavaApp),
+        matchesGoldenFile('goldens/task-form.png'),
+      );
+    });
   });
 
   testWidgets('focus session', (tester) async {
-    _sizeAsPhone(tester);
-    await _pumpApp(tester);
+    await _withRealShadows(() async {
+      _sizeAsPhone(tester);
+      await _pumpApp(tester);
 
-    final task = Task.fromJson(_seedTasks.first);
-    openFocusPage(tester.element(find.byType(HomeScreen)), task);
-    // The countdown ticks every second, so pumpAndSettle would never settle —
-    // pump past the fade transition and the ring's initial sweep instead.
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 350));
-    await tester.pump(const Duration(milliseconds: 950));
+      final task = Task.fromJson(_seedTasks.first);
+      openFocusPage(tester.element(find.byType(HomeScreen)), task);
+      // The countdown ticks every second, so pumpAndSettle would never
+      // settle — pump past the fade transition (the session starts in a
+      // post-frame callback) and the ring's initial sweep instead.
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 350));
+      await tester.pump(const Duration(milliseconds: 950));
 
-    await expectLater(
-      find.byType(NavaApp),
-      matchesGoldenFile('goldens/focus.png'),
-    );
+      await expectLater(
+        find.byType(NavaApp),
+        matchesGoldenFile('goldens/focus.png'),
+      );
 
-    // Tear the tree down explicitly so the session's periodic ticker is
-    // cancelled before the test ends.
-    await tester.pumpWidget(const SizedBox());
+      // Tear the tree down explicitly, then drain the deferred stop() so the
+      // session's periodic ticker is cancelled before the test ends.
+      await tester.pumpWidget(const SizedBox());
+      await tester.pump();
+    });
   });
 }
