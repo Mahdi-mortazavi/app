@@ -32,6 +32,9 @@ class _PermissionPrimerSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = NavaColors.of(context);
+    final type = AppTypography.of(context);
+
     return SafeArea(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
@@ -49,13 +52,13 @@ class _PermissionPrimerSheet extends StatelessWidget {
               const SizedBox(height: 14),
               Text(
                 'یادآوری‌های دقیق',
-                style: AppTypography.title,
+                style: type.title,
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: 8),
               Text(
                 'برای اینکه دقیقاً سر وقت یادت بیاریم، اجازه‌ی ارسال اعلان لازم داریم.',
-                style: AppTypography.caption,
+                style: type.caption,
                 textAlign: TextAlign.center,
                 maxLines: 3,
                 overflow: TextOverflow.ellipsis,
@@ -64,7 +67,9 @@ class _PermissionPrimerSheet extends StatelessWidget {
               SizedBox(
                 width: double.infinity,
                 child: CupertinoButton(
-                  color: AppColors.ink,
+                  // Tinted = the primary call to action (semantic, not
+                  // decorative).
+                  color: AppColors.accentBlue,
                   borderRadius: BorderRadius.circular(16),
                   onPressed: () => Navigator.of(context).pop(true),
                   child: const Text(
@@ -79,7 +84,7 @@ class _PermissionPrimerSheet extends StatelessWidget {
               const SizedBox(height: 8),
               CupertinoButton(
                 onPressed: () => Navigator.of(context).pop(false),
-                child: Text('فعلاً نه', style: AppTypography.caption),
+                child: Text('فعلاً نه', style: type.caption.copyWith(color: c.ink)),
               ),
             ],
           ),

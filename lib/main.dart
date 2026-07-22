@@ -9,13 +9,6 @@ import 'providers/task_providers.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setSystemUIOverlayStyle(
-    const SystemUiOverlayStyle(
-      statusBarColor: Colors.transparent,
-      statusBarIconBrightness: Brightness.dark,
-    ),
-  );
-
   // Notifications need timezone data loaded before any reminder can be
   // scheduled, so this awaits before the first frame rather than racing it.
   // A failure here (e.g. a plugin/platform hiccup) must never block launch —
@@ -44,6 +37,7 @@ class NavaApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Nava',
       theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       builder: (context, child) {
         // Honor the system Dynamic Type setting, but clamp the upper bound so
         // the largest accessibility sizes scale text without shattering the
@@ -53,11 +47,23 @@ class NavaApp extends StatelessWidget {
           minScaleFactor: 0.9,
           maxScaleFactor: 1.35,
         );
-        return MediaQuery(
-          data: mq.copyWith(textScaler: clamped),
-          child: Directionality(
-            textDirection: TextDirection.rtl,
-            child: child!,
+        final isDark = mq.platformBrightness == Brightness.dark;
+        return AnnotatedRegion<SystemUiOverlayStyle>(
+          // Status/navigation bar icons flip with appearance; the bar itself
+          // stays transparent over the canvas gradient.
+          value: (isDark
+                  ? SystemUiOverlayStyle.light
+                  : SystemUiOverlayStyle.dark)
+              .copyWith(
+            statusBarColor: Colors.transparent,
+            systemNavigationBarColor: Colors.transparent,
+          ),
+          child: MediaQuery(
+            data: mq.copyWith(textScaler: clamped),
+            child: Directionality(
+              textDirection: TextDirection.rtl,
+              child: child!,
+            ),
           ),
         );
       },

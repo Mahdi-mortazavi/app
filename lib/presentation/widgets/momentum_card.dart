@@ -12,6 +12,8 @@ import '../../providers/stats_provider.dart';
 /// The "Momentum" summary: a daily-goal progress ring (goal-gradient effect)
 /// plus a streak chain (habit loop / loss aversion). Tapping the goal cycles
 /// the target, so the commitment stays the user's own choice.
+///
+/// Content, not chrome → rendered on a [SolidCard].
 class MomentumCard extends ConsumerWidget {
   const MomentumCard({super.key});
 
@@ -21,13 +23,15 @@ class MomentumCard extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final view = ref.watch(statsViewProvider);
     final reduceMotion = MediaQuery.of(context).disableAnimations;
+    final c = NavaColors.of(context);
+    final type = AppTypography.of(context);
 
     final ringColor =
         view.goalReached ? AppColors.accentGreen : AppColors.accentBlue;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.gutter),
-      child: LiquidGlass(
+      child: SolidCard(
         borderRadius: BorderRadius.circular(AppRadius.lg),
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Row(
@@ -46,16 +50,16 @@ class MomentumCard extends ConsumerWidget {
                   radius: 34,
                   lineWidth: 6,
                   percent: view.goalProgress,
-                  backgroundColor: AppColors.inkSubdued.withValues(alpha: 0.15),
+                  backgroundColor: c.inkSubdued.withValues(alpha: 0.15),
                   progressColor: ringColor,
                   circularStrokeCap: CircularStrokeCap.round,
                   animation: !reduceMotion,
                   animateFromLastPercent: true,
                   center: Text(
                     Fmt.fa('${view.sessionsToday}/${view.dailyGoal}'),
-                    style: AppTypography.caption.copyWith(
+                    style: type.caption.copyWith(
                       fontWeight: FontWeight.w800,
-                      color: AppColors.ink,
+                      color: c.ink,
                     ),
                   ),
                 ),
@@ -71,14 +75,14 @@ class MomentumCard extends ConsumerWidget {
                     view.goalReached ? 'هدف امروز کامل شد 🎉' : 'تمرکز امروز',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTypography.body.copyWith(fontWeight: FontWeight.w700),
+                    style: type.body.copyWith(fontWeight: FontWeight.w700),
                   ),
                   const SizedBox(height: 2),
                   Text(
                     'برای تغییر هدف روی حلقه بزن',
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: AppTypography.caption,
+                    style: type.caption,
                   ),
                 ],
               ),
@@ -100,6 +104,8 @@ class _StreakBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final active = streak > 0;
+    final c = NavaColors.of(context);
+    final type = AppTypography.of(context);
     return Semantics(
       label: 'زنجیره: $streak روز پیاپی',
       excludeSemantics: true,
@@ -108,15 +114,15 @@ class _StreakBadge extends StatelessWidget {
         children: [
           Icon(
             active ? CupertinoIcons.flame_fill : CupertinoIcons.flame,
-            color: active ? AppColors.accentOrange : AppColors.inkSubdued,
+            color: active ? AppColors.accentOrange : c.inkSubdued,
             size: 26,
           ),
           const SizedBox(height: 2),
           Text(
             Fmt.fa('$streak'),
-            style: AppTypography.caption.copyWith(
+            style: type.caption.copyWith(
               fontWeight: FontWeight.w800,
-              color: active ? AppColors.ink : AppColors.inkSubdued,
+              color: active ? c.ink : c.inkSubdued,
             ),
           ),
         ],

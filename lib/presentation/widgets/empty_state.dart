@@ -18,6 +18,9 @@ class EmptyState extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = NavaColors.of(context);
+    final type = AppTypography.of(context);
+
     final content = Padding(
       padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 48),
       child: Semantics(
@@ -25,12 +28,12 @@ class EmptyState extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: 44, color: AppColors.inkSubdued.withValues(alpha: 0.5)),
+            Icon(icon, size: 44, color: c.inkSubdued.withValues(alpha: 0.5)),
             const SizedBox(height: 16),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: AppTypography.title.copyWith(color: AppColors.inkSubdued),
+              style: type.title.copyWith(color: c.inkSubdued),
             ),
             const SizedBox(height: 6),
             Text(
@@ -38,7 +41,7 @@ class EmptyState extends StatelessWidget {
               textAlign: TextAlign.center,
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
-              style: AppTypography.caption,
+              style: type.caption,
             ),
           ],
         ),

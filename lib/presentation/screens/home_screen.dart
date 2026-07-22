@@ -106,7 +106,10 @@ class HomeScreen extends ConsumerWidget {
                         ),
                         child: Semantics(
                           header: true,
-                          child: Text('انجام شده', style: AppTypography.caption),
+                          child: Text(
+                            'انجام شده',
+                            style: AppTypography.of(context).caption,
+                          ),
                         ),
                       ),
                     ),
@@ -157,7 +160,8 @@ class _AddButton extends StatelessWidget {
         onTap: () => openTaskSheet(context),
         borderRadius: BorderRadius.circular(AppRadius.sheet),
         blurSigma: 24,
-        tint: AppColors.ink,
+        // Tinted glass = the screen's primary call to action (Law 6).
+        tint: AppColors.accentBlue,
         tintOpacity: 0.85,
         padding: const EdgeInsets.all(18),
         child: const Icon(
