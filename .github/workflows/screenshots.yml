@@ -1,0 +1,54 @@
+name: Screenshots
+
+# Renders pixel-true app screenshots through the widget tree (no emulator)
+# and commits them to docs/screenshots/ on the branch it was run from.
+# Trigger from the Actions tab whenever the UI changes enough to warrant
+# fresh README imagery.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: screenshots-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - run: flutter pub get
+
+      - name: Render screenshots
+        run: flutter test --tags=screenshots --update-goldens test/screenshots
+
+      - name: Stage into docs/screenshots
+        run: |
+          mkdir -p docs/screenshots
+          cp test/screenshots/goldens/*.png docs/screenshots/
+          ls -la docs/screenshots
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: screenshots
+          path: docs/screenshots/*.png
+
+      - name: Commit refreshed screenshots
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/screenshots
+          if git diff --cached --quiet; then
+            echo "Screenshots unchanged — nothing to commit."
+            exit 0
+          fi
+          git commit -m "chore(docs): refresh app screenshots [skip ci]"
+          git push

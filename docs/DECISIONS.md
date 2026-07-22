@@ -78,3 +78,14 @@ mode (like a full-screen player) — that is a design choice, not a gap.
 ## D-12 · v4: reduced transparency maps to `MediaQuery.highContrast`
 Flutter exposes iOS "reduce transparency"/increase-contrast via the
 high-contrast flag; glass falls back to an opaque bordered surface there.
+
+## D-13 · Screenshots render through the widget tree, not an emulator
+README screenshots are produced by a tagged golden suite
+(`test/screenshots/`, run by the Screenshots workflow) that pumps the real
+app with seeded data and captures full-screen frames at iPhone-class
+resolution — pixel-true to the shipped code and reproducible on every UI
+change. Regular CI excludes the tag, so goldens can never break a release.
+Side effects folded in deliberately: Vazirmatn/IBM Plex Mono now ship in
+the bundle (OFL, ~0.75 MB) with `allowRuntimeFetching = false`, making
+first-launch rendering fully offline; and the old `assets/shot_*.jpg`
+mockups were removed from the APK bundle where they never belonged.

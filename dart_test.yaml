@@ -1,0 +1,5 @@
+# Tag registry. The `screenshots` suite renders README images and is run
+# explicitly by the Screenshots workflow; regular CI excludes it with
+# `flutter test --exclude-tags=screenshots`.
+tags:
+  screenshots:

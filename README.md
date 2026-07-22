@@ -95,39 +95,42 @@ flutter build apk --release --target-platform android-arm64 --split-per-abi
 <!-- SCREENSHOTS GALLERY (FIXED & POLISHED)                  -->
 <!-- ======================================================= -->
 <h2 align="center">✨ گالری تصاویر / Visual Tour</h2>
-<p align="center" style="color: #666;">سه ستون اصلی تجربه کاربری Nava</p>
+<p align="center" style="color: #666;">رندر مستقیم از کد نسخه‌ی فعلی — via the automated screenshot pipeline</p>
 
 <div align="center">
-  <!-- 
-    NOTE: Using HTML Table for perfect layout.
-    Links are converted to 'raw.githubusercontent' to ensure they load.
-  -->
-  <table border="0" style="border-collapse: collapse; width: 100%; max-width: 900px; border: none;">
+  <table border="0" style="border-collapse: collapse; width: 100%; max-width: 1000px; border: none;">
     <tr style="border: none;">
       <!-- CAPTIONS -->
-      <td width="33%" align="center" style="border: none; padding-bottom: 10px;">
+      <td width="25%" align="center" style="border: none; padding-bottom: 10px;">
         <b>🧘‍♂️ Zen Home</b><br>
         <small>خانه مینیمال</small>
       </td>
-      <td width="33%" align="center" style="border: none; padding-bottom: 10px;">
+      <td width="25%" align="center" style="border: none; padding-bottom: 10px;">
+        <b>🌙 Dark Mode</b><br>
+        <small>حالت تاریک</small>
+      </td>
+      <td width="25%" align="center" style="border: none; padding-bottom: 10px;">
         <b>🎯 Deep Focus</b><br>
         <small>تمرکز عمیق</small>
       </td>
-      <td width="33%" align="center" style="border: none; padding-bottom: 10px;">
+      <td width="25%" align="center" style="border: none; padding-bottom: 10px;">
         <b>⚡ Quick Add</b><br>
         <small>افزودن سریع</small>
       </td>
     </tr>
     <tr style="border: none;">
-      <!-- IMAGES -->
-      <td width="33%" align="center" valign="top" style="border: none;">
-        <img src="https://raw.githubusercontent.com/Mahdi-mortazavi/app/main/assets/shot_home.jpg" width="100%" alt="Home Screen" style="border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+      <!-- IMAGES: rendered by .github/workflows/screenshots.yml from the real widget tree -->
+      <td width="25%" align="center" valign="top" style="border: none;">
+        <img src="https://raw.githubusercontent.com/Mahdi-mortazavi/app/main/docs/screenshots/home-light.png" width="100%" alt="Home Screen (Light)" style="border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
       </td>
-      <td width="33%" align="center" valign="top" style="border: none;">
-        <img src="https://raw.githubusercontent.com/Mahdi-mortazavi/app/main/assets/shot_focus.jpg" width="100%" alt="Focus Screen" style="border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+      <td width="25%" align="center" valign="top" style="border: none;">
+        <img src="https://raw.githubusercontent.com/Mahdi-mortazavi/app/main/docs/screenshots/home-dark.png" width="100%" alt="Home Screen (Dark)" style="border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
       </td>
-      <td width="33%" align="center" valign="top" style="border: none;">
-        <img src="https://raw.githubusercontent.com/Mahdi-mortazavi/app/main/assets/shot_add.jpg" width="100%" alt="Add Screen" style="border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+      <td width="25%" align="center" valign="top" style="border: none;">
+        <img src="https://raw.githubusercontent.com/Mahdi-mortazavi/app/main/docs/screenshots/focus.png" width="100%" alt="Focus Screen" style="border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
+      </td>
+      <td width="25%" align="center" valign="top" style="border: none;">
+        <img src="https://raw.githubusercontent.com/Mahdi-mortazavi/app/main/docs/screenshots/task-form.png" width="100%" alt="Add Task Sheet" style="border-radius: 12px; box-shadow: 0 5px 15px rgba(0,0,0,0.1);">
       </td>
     </tr>
   </table>
