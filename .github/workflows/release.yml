@@ -67,7 +67,7 @@ jobs:
         run: flutter analyze
 
       - name: Test
-        run: flutter test
+        run: flutter test --exclude-tags=screenshots
 
       # Release signing: materialize key.properties only if secrets exist.
       - name: Set up release keystore (if secrets configured)

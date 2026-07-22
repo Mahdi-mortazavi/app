@@ -45,6 +45,9 @@ flutter:
   # *** بخش اضافه شده برای خواندن عکس‌ها ***
   assets:
     - assets/
+    # Bundled fonts (OFL) so text renders offline on first launch — no
+    # runtime download by google_fonts. See main.dart.
+    - assets/google_fonts/
 
 # *** تنظیمات ساخت آیکون اپلیکیشن ***
 # هر وقت خواستید آیکون عوض شود، دستور ساخت را در ترمینال بزنید

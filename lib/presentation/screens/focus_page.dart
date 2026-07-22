@@ -24,11 +24,22 @@ class FocusPage extends ConsumerStatefulWidget {
 }
 
 class _FocusPageState extends ConsumerState<FocusPage> with WidgetsBindingObserver {
+  // Captured once so dispose() can reach the timer — `ref` itself is not
+  // usable after the element unmounts. The notifier is app-scoped, so the
+  // reference stays valid for the page's whole lifetime.
+  late final FocusTimerNotifier _timer;
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    ref.read(focusTimerProvider.notifier).start(widget.task);
+    _timer = ref.read(focusTimerProvider.notifier);
+    // Riverpod forbids mutating a provider while the tree is building (this
+    // page is inflated mid-build by the route push). The first frame shows
+    // the idle state; the session starts right after it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _timer.start(widget.task);
+    });
   }
 
   @override
@@ -50,7 +61,9 @@ class _FocusPageState extends ConsumerState<FocusPage> with WidgetsBindingObserv
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
-    ref.read(focusTimerProvider.notifier).stop();
+    // Same build-lock restriction as initState: dispose runs during tree
+    // finalization, so the provider mutation is deferred one microtask.
+    Future.microtask(_timer.stop);
     super.dispose();
   }
 
