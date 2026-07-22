@@ -213,9 +213,13 @@ void main() {
         matchesGoldenFile('goldens/focus.png'),
       );
 
-      // Tear the tree down explicitly, then drain the deferred stop() so the
-      // session's periodic ticker is cancelled before the test ends.
-      await tester.pumpWidget(const SizedBox());
+      // Close the session the way a user would (pop the route) so FocusPage
+      // disposes while the ProviderScope is still alive, then pump past the
+      // reverse transition + the deferred stop() so the periodic ticker is
+      // cancelled before the test ends.
+      await tester.tap(find.byIcon(CupertinoIcons.xmark));
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 400));
       await tester.pump();
     });
   });
