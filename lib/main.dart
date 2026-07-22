@@ -65,9 +65,17 @@ class NavaApp extends StatelessWidget {
           ),
           child: MediaQuery(
             data: mq.copyWith(textScaler: clamped),
-            child: Directionality(
-              textDirection: TextDirection.rtl,
-              child: child!,
+            // The screens draw on the custom glass canvas instead of a
+            // Scaffold, so without this transparent Material there is no
+            // DefaultTextStyle: raw-styled Text falls back to the platform
+            // font (not Vazirmatn) with the "missing Material" yellow
+            // underlines.
+            child: Material(
+              type: MaterialType.transparency,
+              child: Directionality(
+                textDirection: TextDirection.rtl,
+                child: child!,
+              ),
             ),
           ),
         );

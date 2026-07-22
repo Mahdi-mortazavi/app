@@ -55,8 +55,11 @@ class AppTypography {
       );
 
   /// Focus countdown — always on the immersive dark canvas, so its color is
-  /// appearance-independent by design.
-  static TextStyle get timer => GoogleFonts.ibmPlexMono(
+  /// appearance-independent by design. The readout uses Persian digits
+  /// (Fmt.clock), which Latin monospace faces don't cover at all, so the
+  /// digits come from Vazirmatn with tabular figures to keep their widths
+  /// stable as the clock ticks.
+  static TextStyle get timer => GoogleFonts.vazirmatn(
         fontSize: 68,
         fontWeight: FontWeight.w300,
         color: CupertinoColors.white,

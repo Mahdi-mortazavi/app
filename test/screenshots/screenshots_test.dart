@@ -117,12 +117,12 @@ Future<void> _loadFonts() async {
     }
   }
   await GoogleFonts.pendingFonts([
+    GoogleFonts.vazirmatn(fontWeight: FontWeight.w300),
     GoogleFonts.vazirmatn(),
     GoogleFonts.vazirmatn(fontWeight: FontWeight.w500),
     GoogleFonts.vazirmatn(fontWeight: FontWeight.w600),
     GoogleFonts.vazirmatn(fontWeight: FontWeight.w700),
     GoogleFonts.vazirmatn(fontWeight: FontWeight.w800),
-    GoogleFonts.ibmPlexMono(fontWeight: FontWeight.w300),
   ]);
 }
 
