@@ -16,7 +16,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:app/data/models/task.dart';
@@ -97,9 +96,11 @@ Map<String, Object> _seedPrefs() => {
       }),
     };
 
-/// Loads every real font so screenshots don't render in the blocky Ahem
-/// test font: icon fonts from the FontManifest, text fonts from the bundled
-/// assets/google_fonts files (runtime fetching stays off).
+/// Loads every real font so screenshots don't render in the blocky Ahem test
+/// font. Everything — Vazirmatn (all weights) and the icon fonts — comes from
+/// the FontManifest, which is generated from pubspec's `fonts:`/asset
+/// declarations. Each TTF carries its own OS/2 weight, so a single per-family
+/// FontLoader still resolves individual weights correctly.
 Future<void> _loadFonts() async {
   final manifest = jsonDecode(
     await rootBundle.loadString('FontManifest.json'),
@@ -116,14 +117,6 @@ Future<void> _loadFonts() async {
       await loader.load();
     }
   }
-  await GoogleFonts.pendingFonts([
-    GoogleFonts.vazirmatn(fontWeight: FontWeight.w300),
-    GoogleFonts.vazirmatn(),
-    GoogleFonts.vazirmatn(fontWeight: FontWeight.w500),
-    GoogleFonts.vazirmatn(fontWeight: FontWeight.w600),
-    GoogleFonts.vazirmatn(fontWeight: FontWeight.w700),
-    GoogleFonts.vazirmatn(fontWeight: FontWeight.w800),
-  ]);
 }
 
 void _sizeAsPhone(WidgetTester tester) {
@@ -153,7 +146,6 @@ Future<void> _withRealShadows(Future<void> Function() body) async {
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
-  GoogleFonts.config.allowRuntimeFetching = false;
 
   setUpAll(_loadFonts);
 

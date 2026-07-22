@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'core/theme/app_theme.dart';
 import 'presentation/screens/home_screen.dart';
@@ -9,10 +8,6 @@ import 'providers/task_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Fonts ship in the bundle (assets/google_fonts/), so the first launch
-  // renders correctly with no network and no font flash.
-  GoogleFonts.config.allowRuntimeFetching = false;
 
   // Notifications need timezone data loaded before any reminder can be
   // scheduled, so this awaits before the first frame rather than racing it.

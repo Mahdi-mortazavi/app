@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 import 'app_colors.dart';
 
@@ -15,7 +14,8 @@ class AppTheme {
         scaffoldBackgroundColor: Colors.transparent,
         canvasColor: Colors.transparent,
         primaryColor: AppColors.accentBlue,
-        fontFamily: GoogleFonts.vazirmatn().fontFamily,
+        // Native family from pubspec — inherited by every raw-styled Text.
+        fontFamily: 'Vazirmatn',
         splashFactory: NoSplash.splashFactory,
         highlightColor: Colors.transparent,
         colorScheme: ColorScheme.fromSeed(
