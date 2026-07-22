@@ -28,12 +28,14 @@ class _TaskTileState extends ConsumerState<TaskTile> {
   Widget build(BuildContext context) {
     final task = widget.task;
     final hasSubtasks = task.subtasks.isNotEmpty;
+    final c = NavaColors.of(context);
+    final type = AppTypography.of(context);
 
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.md),
       child: Column(
         children: [
-          LiquidGlassTap(
+          SolidCardTap(
             onTap: () => openTaskSheet(context, task),
             onLongPress:
                 hasSubtasks ? () => setState(() => _expanded = !_expanded) : null,
@@ -57,13 +59,11 @@ class _TaskTileState extends ConsumerState<TaskTile> {
                         task.title,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: AppTypography.body.copyWith(
+                        style: type.body.copyWith(
                           fontWeight: FontWeight.w600,
                           decoration:
                               widget.isDone ? TextDecoration.lineThrough : null,
-                          color: widget.isDone
-                              ? AppColors.inkSubdued
-                              : AppColors.ink,
+                          color: widget.isDone ? c.inkSubdued : c.ink,
                         ),
                       ),
                       if (!widget.isDone) _MetaRow(task: task),
@@ -76,7 +76,7 @@ class _TaskTileState extends ConsumerState<TaskTile> {
                     child: TappableIcon(
                       icon: CupertinoIcons.play_circle_fill,
                       size: 30,
-                      color: AppColors.ink,
+                      color: c.ink,
                       semanticLabel: 'شروع تمرکز روی ${task.title}',
                       onTap: () => openFocusPage(context, task),
                     ),
@@ -87,9 +87,8 @@ class _TaskTileState extends ConsumerState<TaskTile> {
           if (_expanded && hasSubtasks)
             Padding(
               padding: const EdgeInsets.only(top: AppSpacing.sm),
-              child: LiquidGlass(
+              child: SolidCard(
                 borderRadius: BorderRadius.circular(AppRadius.md),
-                blurSigma: 18,
                 child: Column(
                   children: [
                     for (final s in task.subtasks)
@@ -98,9 +97,8 @@ class _TaskTileState extends ConsumerState<TaskTile> {
                           s.isCompleted
                               ? CupertinoIcons.check_mark_circled_solid
                               : CupertinoIcons.circle,
-                          color: s.isCompleted
-                              ? AppColors.accentGreen
-                              : AppColors.inkSubdued,
+                          color:
+                              s.isCompleted ? AppColors.accentGreen : c.inkSubdued,
                           size: 18,
                         ),
                         title: Text(
@@ -112,6 +110,7 @@ class _TaskTileState extends ConsumerState<TaskTile> {
                                 ? TextDecoration.lineThrough
                                 : null,
                             fontSize: 13,
+                            color: c.ink,
                           ),
                         ),
                         onTap: () => ref
@@ -136,6 +135,7 @@ class _Checkbox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = NavaColors.of(context);
     return Semantics(
       button: true,
       checked: isDone,
@@ -159,7 +159,7 @@ class _Checkbox extends StatelessWidget {
                 border: Border.all(
                   color: isDone
                       ? AppColors.accentGreen
-                      : CupertinoColors.white.withValues(alpha: 0.7),
+                      : c.inkSubdued.withValues(alpha: 0.45),
                   width: 2,
                 ),
               ),
@@ -185,6 +185,8 @@ class _MetaRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final c = NavaColors.of(context);
+    final type = AppTypography.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: AppSpacing.xs),
       child: Row(
@@ -193,25 +195,24 @@ class _MetaRow extends StatelessWidget {
             child: Text(
               task.category,
               overflow: TextOverflow.ellipsis,
-              style: AppTypography.caption,
+              style: type.caption,
             ),
           ),
           if (task.reminder != null) ...[
             const SizedBox(width: AppSpacing.sm),
-            const Icon(CupertinoIcons.alarm, size: 12, color: AppColors.inkSubdued),
+            Icon(CupertinoIcons.alarm, size: 12, color: c.inkSubdued),
             const SizedBox(width: 2),
-            Text(Fmt.timeOfDay(task.reminder!), style: AppTypography.caption),
+            Text(Fmt.timeOfDay(task.reminder!), style: type.caption),
           ],
           if (task.subtasks.isNotEmpty) ...[
             const SizedBox(width: AppSpacing.sm),
-            const Icon(CupertinoIcons.list_bullet,
-                size: 12, color: AppColors.inkSubdued),
+            Icon(CupertinoIcons.list_bullet, size: 12, color: c.inkSubdued),
             const SizedBox(width: 2),
             Text(
               Fmt.fa(
                 '${task.subtasks.where((e) => e.isCompleted).length}/${task.subtasks.length}',
               ),
-              style: AppTypography.caption,
+              style: type.caption,
             ),
           ],
         ],

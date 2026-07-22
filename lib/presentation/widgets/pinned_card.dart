@@ -18,9 +18,12 @@ class PinnedCard extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = NavaColors.of(context);
+    final type = AppTypography.of(context);
+
     return SizedBox(
       width: 156,
-      child: LiquidGlassTap(
+      child: SolidCardTap(
         onTap: () => openTaskSheet(context, task),
         borderRadius: BorderRadius.circular(AppRadius.lg),
         padding: const EdgeInsets.all(AppSpacing.lg),
@@ -50,7 +53,7 @@ class PinnedCard extends ConsumerWidget {
                           decoration: BoxDecoration(
                             shape: BoxShape.circle,
                             border: Border.all(
-                              color: CupertinoColors.white.withValues(alpha: 0.7),
+                              color: c.inkSubdued.withValues(alpha: 0.45),
                               width: 2,
                             ),
                           ),
@@ -70,7 +73,7 @@ class PinnedCard extends ConsumerWidget {
               task.title,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
-              style: AppTypography.body.copyWith(fontWeight: FontWeight.w700),
+              style: type.body.copyWith(fontWeight: FontWeight.w700),
             ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -79,7 +82,7 @@ class PinnedCard extends ConsumerWidget {
                   child: Text(
                     Fmt.fa('${task.duration} دقیقه'),
                     overflow: TextOverflow.ellipsis,
-                    style: AppTypography.caption,
+                    style: type.caption,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.xs),
@@ -88,7 +91,7 @@ class PinnedCard extends ConsumerWidget {
                   child: TappableIcon(
                     icon: CupertinoIcons.play_circle_fill,
                     size: 26,
-                    color: AppColors.ink,
+                    color: c.ink,
                     minTarget: 36,
                     semanticLabel: 'شروع تمرکز روی ${task.title}',
                     onTap: () => openFocusPage(context, task),

@@ -53,3 +53,28 @@ materializes it from secrets (`KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`,
 `KEY_ALIAS`, `KEY_PASSWORD`) when they exist. Without secrets the build
 falls back to debug signing and the release notes disclose it — an unsigned
 hotfix must never be blocked by missing secrets.
+
+## D-9 · v4: content cards are solid, glass is chrome-only
+The v3 glass-everywhere look violated the material's own laws (glass inside
+scrolling lists, unbounded blur layers). v4 splits the surface system:
+`SolidCard` for content (zero blur, safe at any list length), `LiquidGlass`
+for the ≤2 chrome layers per screen (header, primary action, sheets, focus
+controls). This is the semantically correct Apple model AND the perf fix.
+
+## D-10 · v4: springs via SpringSimulation, not a physics rewrite
+Press feedback uses `AnimationController.unbounded` + `SpringSimulation`
+parameterized SwiftUI-style (response/dampingRatio) — interruptible by
+construction (every retarget starts from the current presentation value).
+Full gesture-velocity handoff (sheet drag, momentum projection, rubber-band)
+belongs to the packages already handling those surfaces
+(`modal_bottom_sheet` drag-to-dismiss); reimplementing them wholesale was
+judged churn without user-visible gain.
+
+## D-11 · v4: dark mode ships; Focus stays always-dark
+The appearance scheme (`NavaColors.light/.dark`) resolves from system
+brightness. The Focus screen deliberately remains an always-dark immersive
+mode (like a full-screen player) — that is a design choice, not a gap.
+
+## D-12 · v4: reduced transparency maps to `MediaQuery.highContrast`
+Flutter exposes iOS "reduce transparency"/increase-contrast via the
+high-contrast flag; glass falls back to an opaque bordered surface there.

@@ -4,9 +4,9 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../providers/task_providers.dart';
 
-/// The small pill-shaped control used for category/duration/pin/reminder
-/// selectors in the task form. A glass surface that inverts to a solid ink
-/// fill when [active].
+/// The small pill-shaped selector used in the task form. An inset fill chip
+/// that inverts to a solid ink capsule when [active] — appearance-aware in
+/// both states.
 class GlassBadge extends ConsumerWidget {
   const GlassBadge(
     this.label, {
@@ -23,6 +23,10 @@ class GlassBadge extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final c = NavaColors.of(context);
+    // Inverted capsule: ink background with canvas-colored content.
+    final fg = active ? c.canvasTop : c.ink;
+
     return GestureDetector(
       onTap: () {
         ref.read(hapticsServiceProvider).selection();
@@ -32,14 +36,8 @@ class GlassBadge extends ConsumerWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
         decoration: BoxDecoration(
-          color: active ? AppColors.ink : CupertinoColors.white.withValues(alpha: 0.5),
+          color: active ? c.ink : c.fill,
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(
-            color: active
-                ? CupertinoColors.transparent
-                : CupertinoColors.white.withValues(alpha: 0.6),
-            width: 0.6,
-          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -48,7 +46,7 @@ class GlassBadge extends ConsumerWidget {
               Icon(
                 icon,
                 size: 14,
-                color: active ? CupertinoColors.white : AppColors.inkSubdued,
+                color: active ? fg : c.inkSubdued,
               ),
               const SizedBox(width: 4),
             ],
@@ -57,7 +55,7 @@ class GlassBadge extends ConsumerWidget {
               style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.w700,
-                color: active ? CupertinoColors.white : AppColors.ink,
+                color: fg,
               ),
             ),
           ],

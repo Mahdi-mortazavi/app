@@ -60,10 +60,13 @@ class _TaskFormState extends ConsumerState<TaskForm> {
 
   @override
   Widget build(BuildContext context) {
+    final c = NavaColors.of(context);
+    final type = AppTypography.of(context);
+
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(top: Radius.circular(32)),
       child: ColoredBox(
-        color: CupertinoColors.white.withValues(alpha: 0.92),
+        color: c.sheet.withValues(alpha: 0.96),
         child: SafeArea(
           top: false,
           child: SingleChildScrollView(
@@ -81,7 +84,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                     width: 40,
                     height: 4,
                     decoration: BoxDecoration(
-                      color: AppColors.inkSubdued.withValues(alpha: 0.3),
+                      color: c.inkSubdued.withValues(alpha: 0.3),
                       borderRadius: BorderRadius.circular(2),
                     ),
                   ),
@@ -92,7 +95,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                   children: [
                     Text(
                       widget.task == null ? 'کار جدید' : 'ویرایش',
-                      style: AppTypography.title,
+                      style: type.title,
                     ),
                     if (widget.task != null)
                       CupertinoButton(
@@ -114,11 +117,11 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                   decoration: BoxDecoration(
                     border: Border(
                       bottom: BorderSide(
-                        color: AppColors.inkSubdued.withValues(alpha: 0.15),
+                        color: c.inkSubdued.withValues(alpha: 0.15),
                       ),
                     ),
                   ),
-                  style: AppTypography.body,
+                  style: type.body,
                 ),
                 const SizedBox(height: 16),
                 SingleChildScrollView(
@@ -176,7 +179,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                       Fmt.fa(
                         'زیرمجموعه (${_subtasks.where((e) => e.isCompleted).length}/${_subtasks.length})',
                       ),
-                      style: AppTypography.caption,
+                      style: type.caption,
                     ),
                     CupertinoButton(
                       padding: EdgeInsets.zero,
@@ -195,7 +198,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppColors.canvasTop.withValues(alpha: 0.6),
+                      color: c.fill,
                       borderRadius: BorderRadius.circular(14),
                     ),
                     child: Row(
@@ -216,7 +219,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                                 : CupertinoIcons.circle,
                             color: s.isCompleted
                                 ? AppColors.accentGreen
-                                : AppColors.inkSubdued,
+                                : c.inkSubdued,
                             size: 20,
                           ),
                         ),
@@ -227,6 +230,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
+                              color: c.ink,
                               decoration:
                                   s.isCompleted ? TextDecoration.lineThrough : null,
                             ),
@@ -247,8 +251,9 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                   ),
                 const SizedBox(height: 24),
                 CupertinoButton(
-                  color: AppColors.ink,
-                  disabledColor: AppColors.ink.withValues(alpha: 0.3),
+                  // Tinted = the primary call to action (semantic accent).
+                  color: AppColors.accentBlue,
+                  disabledColor: AppColors.accentBlue.withValues(alpha: 0.35),
                   borderRadius: BorderRadius.circular(16),
                   // Disabled (not silently no-op) until there's a title, so the
                   // button's state always matches what tapping it will do.
