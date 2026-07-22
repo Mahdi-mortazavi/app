@@ -214,9 +214,9 @@ void main() {
       );
 
       // Close the session the way a user would (pop the route) so FocusPage
-      // disposes while the ProviderScope is still alive, then pump past the
-      // reverse transition + the deferred stop() so the periodic ticker is
-      // cancelled before the test ends.
+      // disposes in normal order, then pump past the reverse transition +
+      // the microtask-deferred stop() so the periodic ticker is cancelled
+      // before the test ends.
       await tester.tap(find.byIcon(CupertinoIcons.xmark));
       await tester.pump();
       await tester.pump(const Duration(milliseconds: 400));

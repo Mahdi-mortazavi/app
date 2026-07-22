@@ -10,7 +10,9 @@ on:
   workflow_dispatch:
   push:
     branches: ['claude/**']
-    paths: ['test/screenshots/**']
+    # UI code changes should refresh the imagery too — the commit step is a
+    # no-op when the rendered pixels are unchanged.
+    paths: ['test/screenshots/**', 'lib/**', 'assets/**']
 
 permissions:
   contents: write
