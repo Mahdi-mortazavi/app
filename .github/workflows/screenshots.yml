@@ -3,9 +3,14 @@ name: Screenshots
 # Renders pixel-true app screenshots through the widget tree (no emulator)
 # and commits them to docs/screenshots/ on the branch it was run from.
 # Trigger from the Actions tab whenever the UI changes enough to warrant
-# fresh README imagery.
+# fresh README imagery. (workflow_dispatch only resolves on the default
+# branch, so feature branches that touch the screenshot suite auto-refresh
+# via the push trigger instead.)
 on:
   workflow_dispatch:
+  push:
+    branches: ['claude/**']
+    paths: ['test/screenshots/**']
 
 permissions:
   contents: write
