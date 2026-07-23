@@ -1,18 +1,15 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:google_fonts/google_fonts.dart';
 
+import 'core/theme/app_colors.dart';
 import 'core/theme/app_theme.dart';
 import 'presentation/screens/home_screen.dart';
 import 'providers/task_providers.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  // Fonts ship in the bundle (assets/google_fonts/), so the first launch
-  // renders correctly with no network and no font flash.
-  GoogleFonts.config.allowRuntimeFetching = false;
 
   // Notifications need timezone data loaded before any reminder can be
   // scheduled, so this awaits before the first frame rather than racing it.
@@ -72,15 +69,49 @@ class NavaApp extends StatelessWidget {
             // underlines.
             child: Material(
               type: MaterialType.transparency,
-              child: Directionality(
-                textDirection: TextDirection.rtl,
-                child: child!,
+              // The UI is built from Cupertino widgets (buttons, dialogs,
+              // pickers). Under MaterialApp their text defaults to SF Pro,
+              // which has no Persian glyphs — so CupertinoButton labels like
+              // the sheet's "ذخیره" rendered in the wrong font (tofu in the
+              // golden). This forces every Cupertino text role onto Vazirmatn.
+              child: CupertinoTheme(
+                data: _cupertinoTheme(isDark),
+                child: Directionality(
+                  textDirection: TextDirection.rtl,
+                  child: child!,
+                ),
               ),
             ),
           ),
         );
       },
       home: const HomeScreen(),
+    );
+  }
+
+  /// A Cupertino theme whose every text role uses Vazirmatn, so Cupertino
+  /// widgets (buttons, dialog actions, pickers) stop falling back to SF Pro —
+  /// which carries no Persian glyphs.
+  static CupertinoThemeData _cupertinoTheme(bool isDark) {
+    final base = CupertinoThemeData(
+      brightness: isDark ? Brightness.dark : Brightness.light,
+      primaryColor: AppColors.accentBlue,
+    );
+    final t = base.textTheme;
+    return base.copyWith(
+      textTheme: t.copyWith(
+        textStyle: t.textStyle.copyWith(fontFamily: 'Vazirmatn'),
+        actionTextStyle: t.actionTextStyle.copyWith(fontFamily: 'Vazirmatn'),
+        tabLabelTextStyle: t.tabLabelTextStyle.copyWith(fontFamily: 'Vazirmatn'),
+        navTitleTextStyle: t.navTitleTextStyle.copyWith(fontFamily: 'Vazirmatn'),
+        navLargeTitleTextStyle:
+            t.navLargeTitleTextStyle.copyWith(fontFamily: 'Vazirmatn'),
+        navActionTextStyle:
+            t.navActionTextStyle.copyWith(fontFamily: 'Vazirmatn'),
+        pickerTextStyle: t.pickerTextStyle.copyWith(fontFamily: 'Vazirmatn'),
+        dateTimePickerTextStyle:
+            t.dateTimePickerTextStyle.copyWith(fontFamily: 'Vazirmatn'),
+      ),
     );
   }
 }

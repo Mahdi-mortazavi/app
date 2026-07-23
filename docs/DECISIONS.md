@@ -89,3 +89,21 @@ Side effects folded in deliberately: Vazirmatn/IBM Plex Mono now ship in
 the bundle (OFL, ~0.75 MB) with `allowRuntimeFetching = false`, making
 first-launch rendering fully offline; and the old `assets/shot_*.jpg`
 mockups were removed from the APK bundle where they never belonged.
+
+## D-14 · Vazirmatn is a native pubspec font, not a google_fonts runtime load
+The first screenshot render exposed three real bugs the widget tests never
+caught: (a) FocusPage mutated its provider in `initState`/`dispose`, which
+Riverpod forbids (debug-mode crash); (b) the screens draw on a custom glass
+canvas with no `Material` ancestor, so raw-styled `Text` inherited no
+`DefaultTextStyle` and fell back to the platform font with the yellow
+"missing Material" underlines; (c) the focus timer used IBM Plex Mono, which
+has zero Persian-digit glyphs, so the countdown never actually rendered.
+The durable fix for the font issues is to declare Vazirmatn as a first-class
+Flutter font family in `pubspec.yaml` (all six weights) and reference it by
+name everywhere — theme, typography scale, and timer — instead of loading it
+through `google_fonts` at runtime. Every weight now resolves natively for any
+`Text`, including raw `TextStyle`s that only inherit the family and text
+inside modal sheets (the Save button that previously rendered as tofu). A
+transparent `Material` in the app builder supplies text defaults app-wide.
+This is the reason screenshots are worth rendering from real code: they are a
+UI regression test, not just marketing images.

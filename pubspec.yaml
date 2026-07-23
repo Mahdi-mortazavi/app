@@ -41,13 +41,33 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
-  
+
   # *** بخش اضافه شده برای خواندن عکس‌ها ***
   assets:
     - assets/
-    # Bundled fonts (OFL) so text renders offline on first launch — no
-    # runtime download by google_fonts. See main.dart.
+    # Keeps the OFL license text alongside the bundled fonts.
     - assets/google_fonts/
+
+  # Vazirmatn is declared as a first-class Flutter font family (not loaded
+  # through google_fonts at runtime) so EVERY weight resolves natively for
+  # any Text — including raw TextStyles that only inherit the family from the
+  # theme, and text inside modal sheets. Offline on first launch, and the
+  # weights render faithfully in golden screenshots.
+  fonts:
+    - family: Vazirmatn
+      fonts:
+        - asset: assets/google_fonts/Vazirmatn-Light.ttf
+          weight: 300
+        - asset: assets/google_fonts/Vazirmatn-Regular.ttf
+          weight: 400
+        - asset: assets/google_fonts/Vazirmatn-Medium.ttf
+          weight: 500
+        - asset: assets/google_fonts/Vazirmatn-SemiBold.ttf
+          weight: 600
+        - asset: assets/google_fonts/Vazirmatn-Bold.ttf
+          weight: 700
+        - asset: assets/google_fonts/Vazirmatn-ExtraBold.ttf
+          weight: 800
 
 # *** تنظیمات ساخت آیکون اپلیکیشن ***
 # هر وقت خواستید آیکون عوض شود، دستور ساخت را در ترمینال بزنید

@@ -12,7 +12,7 @@ on:
     branches: ['claude/**']
     # UI code changes should refresh the imagery too — the commit step is a
     # no-op when the rendered pixels are unchanged.
-    paths: ['test/screenshots/**', 'lib/**', 'assets/**']
+    paths: ['test/screenshots/**', 'lib/**', 'assets/**', 'pubspec.yaml']
 
 permissions:
   contents: write
