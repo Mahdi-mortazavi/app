@@ -261,6 +261,7 @@ class _TaskFormState extends ConsumerState<TaskForm> {
                   child: const Text(
                     'ذخیره',
                     style: TextStyle(
+                      fontFamily: 'Vazirmatn',
                       fontWeight: FontWeight.w700,
                       color: CupertinoColors.white,
                     ),
