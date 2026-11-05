@@ -4,6 +4,26 @@ All notable changes are recorded here. From v2.0.0 onward this file is
 maintained automatically by [release-please](https://github.com/googleapis/release-please)
 from Conventional Commit messages — see [`docs/RELEASING.md`](docs/RELEASING.md).
 
+## [3.2.0](https://github.com/Mahdi-mortazavi/app/compare/v3.1.0...v3.2.0) (2026-11-05)
+
+
+### ✨ Features
+
+* **docs:** automated screenshot pipeline + bundled offline fonts ([#92](https://github.com/Mahdi-mortazavi/app/issues/92)) ([6dc97fb](https://github.com/Mahdi-mortazavi/app/commit/6dc97fb7c20e0751b2261561810697ff78c52c88))
+
+
+### 🐛 Bug Fixes
+
+* **ui:** declare Vazirmatn as a native font family so every weight resolves ([#93](https://github.com/Mahdi-mortazavi/app/issues/93)) ([9dc89ab](https://github.com/Mahdi-mortazavi/app/commit/9dc89abefaa460b27d776ea26afa0485345a0d91))
+
+
+### 📝 Documentation
+
+* add community health file ([8518c8c](https://github.com/Mahdi-mortazavi/app/commit/8518c8cc178f929310e8fbdb4287b4aabfb71a87))
+* add community health file ([752fa7b](https://github.com/Mahdi-mortazavi/app/commit/752fa7b2ecf52f837fc534ef072cf78697b8689c))
+* add community health file ([1e79577](https://github.com/Mahdi-mortazavi/app/commit/1e79577daa413da6f4234200400fb493641d53e5))
+* add MIT license ([a44acf0](https://github.com/Mahdi-mortazavi/app/commit/a44acf00a08ea1c271367385d701b73f7b1625cd))
+
 ## [3.1.0](https://github.com/Mahdi-mortazavi/app/compare/v3.0.0...v3.1.0) (2026-07-22)
 
 
